@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>无标题文档</title>
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/font-awesome.min.css">
+<link rel="stylesheet" href="css/summernote.css">
+<script src="js/jquery-1.9.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/summernote.min.js"></script>
+<script>
+$(document).ready(function() {
+	$('#summernote').summernote({
+		toolbar: [
+		//[groupname, [button list]]
+		
+		['style', ['bold', 'italic', 'underline', 'clear']],
+		['font', ['strikethrough']],
+		['fontsize', ['fontsize']],
+		['color', ['color']],
+		['para', ['ul', 'ol', 'paragraph']],
+		['height', ['height']],
+		['insert',['picture','hr']],
+	  ]
+	});
+});
+</script>
+</head>
+
+<body>
+<div id="summernote"></div>
+</body>
+</html>

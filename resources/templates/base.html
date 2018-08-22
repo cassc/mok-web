@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>{{server-title|default:"OKOK"}}健康平台</title>
+    <script src="/p/js/bi.js"></script>
+    <link rel="stylesheet" href="font-awesome-4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/backStage.css?{{versionid}}">
+    <link rel="stylesheet" href="css/toastr.css?{{versionid}}">
+    <link rel="stylesheet" href="css/ledger.css?{{versionid}}">
+    <script>var adminPhone = "{{admin.phone}}";</script>
+    {% block header-scripts %}   
+    {% endblock %}
+  </head>
+
+  <body>
+    {% block pre-body %}
+    {% endblock %}
+
+    <div class="bk_header">
+      <div class="bk_wrap">
+    	<a href="#">
+          <img src='images/{{header-logo|default:"bk_logo.png"}}' class="bk_logo">
+        </a>
+        <div class="bk_info_user">
+          <img src="images/personIcon.png" class="personIcon">
+
+          <span class="personName">
+            {% if admin.rightcode|super-user? %}
+            <a href="/admin/editPassword">
+            {{admin.username}} {{admin.email}} {{admin.phone}}
+            </a>
+            {% else %}
+            {{admin.username}} {{admin.email}} {{admin.phone}}
+            {% endif %}
+          </span>
+          <a href="/logout" class="loginOut">退出</a>
+        </div>
+      </div>
+    </div>
+    <div class="bk_content">
+      <div class="bk_wrap">
+    	<div id="leftnavbar" class="bk_content-left"> </div>
+        <div id="app" class="bk_content-right"> </div>
+      </div>
+    </div>
+
+    <div class="footer-ok">
+      <div class="wrap-ok" style="max-width:1200px">
+        {% if server-title %}
+        {% else %}
+        <ul class="about-ok">
+          <li>
+            <a class="about-ok-active" href="http://www.tookok.cn/aboutUs.html">关于OKOK</a>
+          </li>
+          <li>
+            <a href="http://www.tookok.cn/concat.html">联系我们</a>
+          </li>
+        </ul>
+        <span class="copyright">
+          版权所有 Copyright ©2015 芯海互联&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;粤ICP备12084523号
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+  </body>
+  <script src="/js/jquery.min.js"></script>
+  <!-- Highcharts -->
+  <!-- <script src="https://code.highcharts.com/highcharts.js"></script> -->
+  <!-- <script src="https://code.highcharts.com/modules/exporting.js"></script> -->
+  <script src="//cdn.bootcss.com/highcharts/5.0.7/highcharts.js"></script>
+  <script src="//cdn.bootcss.com/highcharts/5.0.7/js/modules/exporting.js"></script>
+  <script src="/js/toastr.js"></script>
+  {% block footer-scripts %}
+  {% endblock %}
+
+</html>

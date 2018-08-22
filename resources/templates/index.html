@@ -1,0 +1,31 @@
+{% extends "templates/base.html" %}
+
+{% block header-scripts %}
+<link rel="stylesheet" href="/p/css/pikaday.css">
+{% endblock %}
+
+{% block pre-body %}
+<link rel="stylesheet" href="css/right-hover.css?{{versionid}}">
+
+{% endblock %}
+
+{% block footer-scripts %}
+<script src="/js/moment/moment-with-locales.min.js"> </script>
+<!-- <script src="/js/p/react.color.js"> </script> -->
+<link rel='stylesheet' href='/css/spectrum/spectrum.css' />
+<script src='/js/spectrum/spectrum.js'></script>
+
+{% if dev %}
+<script type="text/javascript" src="/cljs/out/goog/base.js"></script>
+<script src="cljs/mok.js"> </script>
+<script type="text/javascript">goog.require("mok.core");</script>
+<script type="text/javascript">goog.require("mok.utils");</script>
+<script type="text/javascript">goog.require("mok.pages.broadcast");</script>
+<script type="text/javascript">goog.require("mok.pages.company");</script>
+<script type="text/javascript">goog.require("mok.pages.um");</script>
+{% else %}
+<script src="cljs/mok.js?{{versionid}}"> </script>
+{% endif %}
+<!-- <script type="text/javascript">mok.core.init();</script> -->
+
+{% endblock %}

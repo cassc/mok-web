@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>{{server-title}}健康平台</title>
+<link rel="stylesheet" href="css/main.css">
+<script src="js/jquery.min.js"></script>
+<script>
+$(function(){
+	$('.login-button').click(function(){
+		$('#login-form').submit();
+	});
+	$(window).keydown(function(event){
+		if( event.keyCode == 13 ){
+			$('#login-form').submit();
+		}
+	});
+	
+});
+</script>
+</head>
+
+<body>
+
+<div class="login-layout" style='background:#1390d1 url(../images/{{login-bg|default:"loginLayoutBg.jpg"}}) center top no-repeat;'>
+	<div class="login-layout-form">
+    	<div class="login-form-wrap">
+        	
+        	<form method="post" action="/login" id="login-form">
+                <input type="text" class="lfw-user lt1" placeholder="请输入手机号或者邮箱" name="uid" required>
+                <input type="password" class="lfw-pass lt2" placeholder="请输入密码" name="password" required>
+                <div class="errorInfo">{{error}}</div>
+                <div style="margin-top:34px;">
+                  <a class="login-button aHover" type="submit" href="#">登录</a>
+                </div>
+                <div style="margin-top:15px;">
+                  <div class="login-box">
+                    <input type="checkbox" class="login-check">
+                    <span class="login-span">自动登录</span>
+                    <a href="#" class="login-fot">忘记密码？</a>
+                  </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

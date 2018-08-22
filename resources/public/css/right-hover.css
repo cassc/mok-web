@@ -1,0 +1,14 @@
+/* right-hover */
+.user_statistics{
+  position:fixed; right:20px; top:100px; width:280px; border:1px solid #ccc; border-radius:5px; -moz-border-radius:5px; -webkit-border-radius:5px; box-shadow:1px 1px 2px #bbb; font-size:12px; color:#333;
+  min-height:600px;
+  max-height:700px;
+  overflow-y: scroll;
+}
+.user_statistics_wrap{margin:10px;}
+.us_title{font-weight:bold; line-height:30px; margin-left:5px;}
+.us_companyName{border:1px solid #ccc;}
+.us_companyName_title{border-bottom:1px solid #ccc; padding:6px 5px; font-weight:bold;}
+.us_companyName_ul{padding:5px 0;}
+.us_companyName_ul li{line-height:20px;}
+.us_companyName_ul li{padding:0 5px; list-style:none;}

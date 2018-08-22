@@ -1,0 +1,41 @@
+{% extends "templates/base.html" %}
+
+
+{% block body-container %}
+  <p class="bkcrc-title2">
+    <span>APP推送消息</span>&nbsp;&nbsp;&gt;&nbsp;&nbsp;<span class="bkcrc-seceondT">消息管理</span>
+  </p>
+  <table class="news-table" cellpadding="0" cellspacing="0" border="0">
+    {% for m in messages %}
+    <tr>
+      <td width="205" align="center"><a target="_blank" href="/message/{{m.uri}}"><img src="/message/{{m.cover}}" width="164px" height="108px"></a></td>
+      <td width="400">
+        <p class="news-table-p1">{{m.title}}</p>
+        <p class="news-table-p2">{{m.abstract}}</p>
+      </td>
+      <td width="275" align="center">
+        <p class="news-table-p1">状态：{{m.status}}</p>
+        <p class="news-table-p1">目标：{{m.companyid|cid->name}}({{m.companyid}}) {% if m.sex %}/ {{m.sex|n->sex}}{% endif %}</p>
+        <p class="news-table-p2">{{m.ts|long->datetime}}</p>
+      </td>
+      <td>
+        <!-- <a href="javascript:;" class="news-table-delete">删除</a> -->
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+{% endblock %}
+
+
+{% block footer-scripts %}
+
+{% if dev %}
+<script type="text/javascript" src="cljs/out/goog/base.js"></script>
+<script src="cljs/mok.js"> </script>
+<script type="text/javascript">goog.require("mok.messages");</script>
+{% else %}
+<script src="cljs/mok.js"> </script>
+{% endif %}
+<script>$(document).ready(function(){mok.messages.init();});</script>
+{% endblock %}
