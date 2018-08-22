@@ -1,13 +1,7 @@
 (ns ^:figwheel-always mok.core
   (:refer-clojure :exclude [partial atom flush])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require
-   [ajax.core :refer [GET POST]]
-   [goog.events :as events]
-   [goog.history.EventType :as EventType]
-   [secretary.core :as secretary :include-macros true]
-   [taoensso.timbre :as t]
-   [reagent.core :as r :refer [partial atom]]
-   [reagent.session :as session]
    [mok.utils :as u :refer [default-error-handler admin? hawks-admin? error-toast user-has-right?]]
    [mok.states :refer [me]]
    [mok.pages.company :refer [get-companylist get-all-langs]]
@@ -17,7 +11,16 @@
    [mok.pages.feedback-manage :refer [feedback-manage]]
    [mok.pages.mblog :refer [mblog-manage]]
    [mok.pages.acts :refer [acts-manage]]
-   [mok.pages.report :refer [report-manage]])
+   [mok.pages.report :refer [report-manage]]
+   
+   [ajax.core :refer [GET POST]]
+   [goog.events :as events]
+   [goog.history.EventType :as EventType]
+   [secretary.core :as secretary :include-macros true]
+   [taoensso.timbre :as t]
+   [reagent.core :as r :refer [partial atom]]
+   [reagent.session :as session]
+   [cljs.core.async         :as a :refer [>! <! timeout chan pipe]])
   (:import [goog History]))
 
 (defn left-navbar []
@@ -52,18 +55,28 @@
 
 (defn- get-me
   []
-  (when-not @me
-    (GET "/me"
-         {:handler #(reset! me (:data %))
-          :error-handler (partial default-error-handler "/me")
-          :response-format :json
-          :keywords? true})))
+  (let [ch (chan)]
+    (if @me
+      (a/put! ch :done)
+      (GET "/me"
+           {:handler (fn [{:keys [data]}]
+                       (reset! me data)
+                       (a/put! ch :success))
+            :error-handler (fn [err]
+                             (a/put! ch :error)
+                             (default-error-handler "/me" err))
+            :response-format :json
+            :keywords? true}))
+    ch))
 
 (defn- load-data!
   []
-  (get-companylist)
-  (get-all-langs)
-  (get-me))
+  (go
+    (if (= :success (<! (get-me)))
+      (do
+        (get-companylist)
+        (get-all-langs))
+      (u/redirect! "/login.html"))))
 
 
 
@@ -133,10 +146,30 @@
 ;; Initialize app
 ;; (r/render [#'bdcategories-selector] (.getElementById js/document "bdcategories"))
 
+(defn main-app []
+  (fn []
+    [:div
+     [:div {:class "bk_header"}
+      [:div {:class "bk_wrap"}
+       [:a {:href "#"}
+        [:img {:src "images/bk_logo-haier.png", :class "bk_logo"}]]
+       [:div {:class "bk_info_user"}
+        [:img {:src "images/personIcon.png", :class "personIcon"}]
+        [:span {:class "personName"}
+         [:a {:href "/admin/editPassword"} ]]
+        [:a {:href "/logout" :on-click #(reset! me nil) :class "loginOut"} "退出"]]]]
+     [:div {:class "bk_content"}
+      [:div {:class "bk_wrap"}
+       [:div {:id "leftnavbar", :class "bk_content-left"} " "]
+       [:div {:class "bk_content-right"}
+        [page]]]]
+     [:div {:class "footer-ok"}
+      [:div {:class "wrap-ok", :style {"maxWidth" "1200px"}} ]]]))
+
 
 (defn mount-components []
-  (r/render [#'left-navbar] (.getElementById js/document "leftnavbar"))
-  (r/render [#'page] (.getElementById js/document "app")))
+  ;;(r/render [#'left-navbar] (.getElementById js/document "leftnavbar"))
+  (r/render [#'main-app] (.getElementById js/document "app"))) 
 
 (defonce init! 
   (delay (hook-browser-navigation!))) 
@@ -147,7 +180,4 @@
   @init!
   (mount-components))
 
-
 (main)
-
-

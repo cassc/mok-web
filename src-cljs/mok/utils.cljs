@@ -264,3 +264,9 @@
     "1" "正常"
     "2" "禁言"}
    (str status)))
+
+(defn set-hash! [loc]
+  (set! (.-hash js/window.location) loc))
+
+(defn redirect! [loc]
+  (set! (.-location js/window) loc))

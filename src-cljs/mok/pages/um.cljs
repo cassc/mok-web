@@ -240,13 +240,13 @@
 
 (defn um []
   (set-title! "用户管理")
+  (when-not @userlist
+    (get-userlist true))
+  (when-not @companylist
+    (get-companylist))
+  (when (not @userstats)
+    (get-userstats))
   (fn []
-    (when-not @userlist
-      (get-userlist true))
-    (when-not @companylist
-      (get-companylist))
-    (when (not @userstats)
-      (get-userstats))
     [:div.id.bkcr-content
      [userstats-widget]
      [:p.bkcrc-title

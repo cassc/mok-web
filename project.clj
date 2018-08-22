@@ -1,107 +1,133 @@
-(defproject mok "0.1.125-SNAPSHOT"
-  :description "Management of chipsea-api"
-  :url "http://service.tookok.com"
-  :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [compojure "1.5.1"]
-                 [selmer "1.0.7" :exclusions [cheshire]]
-                 [cheshire "5.6.3"]
-                 [http-kit "2.2.0"]
-                 [hickory "0.6.0"]
-                 [com.postspectacular/rotor "0.1.0"]
-                 [lib-noir "0.9.9" :exclusions [[ring/ring-defaults]]]
-                 [clj-time "0.12.0"]
-                 [com.taoensso/carmine "2.14.0" :exclusions [org.clojure/data.json
-                                                             com.taoensso/encore]]
-                 [org.clojure/java.jdbc "0.6.1"]
-                 [mysql/mysql-connector-java "5.1.34"]
-                 [com.zaxxer/HikariCP "2.4.7"]
-                 [org.clojure/data.json "0.2.6"]
-                 [org.clojars.august/sparrows "0.2.7" :exclusions [[org.clojure/tools.reader] [clj-http]]]
-                 [org.clojure/tools.reader "1.0.0-beta3"]
-                 [org.clojars.august/session-store "0.1.0" :exclusions [[com.taoensso/carmine]]]
-                 [cassc/clj-props "0.1.2"]
-                 [clj-http "3.1.0"]
-                 [com.taoensso/nippy "2.12.1"]
-                 [com.taoensso/timbre "4.7.4" :exclusions [com.taoensso/encore]]
-                 [com.taoensso/encore "2.68.0"]
-                 [ring-server "0.4.0"]
-                 [ring/ring-json "0.4.0"] ;; handling json-body request
-                 [ring/ring-defaults "0.2.1"] ;; supports auto set utf8 encoding in content-type
-                 [org.slf4j/slf4j-jdk14 "1.7.21"]
-                 [dk.ative/docjure "1.10.0"]
-                 [commons-validator/commons-validator "1.5.1" :exclusions [commons-logging/commons-logging]]
-                 [de.bertschneider/clj-geoip "0.2"]
-                 [org.clojure/core.memoize "0.5.9"]
-                 [me.raynes/conch "0.8.0"]
-                 [com.climate/claypoole "1.1.3"]
-                 [clojurewerkz/quartzite "2.0.0"]
-                 [net.glxn.qrgen/javase "2.0"];; qrcode
-                 
-                 [environ "1.1.0"]
-                 [alandipert/storage-atom "2.0.1" ]
-                 [org.clojure/clojurescript "1.9.227"]
-                 [markdown-clj "0.9.89"]
-                 [figwheel "0.5.10"]
-                 [reagent "0.6.0"]
-                 [reagent-forms "0.5.28"]
-                 [cljs-pikaday "0.1.4"]
-                 [reagent-utils "0.2.1"]
+(defproject mok-web "0.1.125-SNAPSHOT"
+  :description "MOK admin frontend"
+  :url ""
+  :license {:name "garfield"}
+  :min-lein-version "2.7.1"
+  
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.10.238"] ;; 1.9.946
+                 [org.clojure/core.async  "0.4.474"]
+
+                 [com.andrewmcveigh/cljs-time "0.5.2"]
+
+                 [reagent "0.7.0" :exclusions [cljsjs/react]]
+                 [reagent-utils "0.3.1"]
                  [secretary "1.2.3"]
-                 [org.clojure/core.async "0.2.391"]
-                 ;;[com.cognitect/transit-cljs "0.8.239"]
-                 [cljs-ajax "0.5.8"]
-                 [flake "0.4.3"]
-                 [com.andrewmcveigh/cljs-time "0.5.0"]
-                 [clojurewerkz/elastisch "2.2.2"]
-                 [thrift-clj "0.3.1"]
-                 [ch.qos.logback/logback-classic "1.0.13"] ;; required by thrift-clj
-                 
-                 [zololabs/jericho-html-parser "3.3.0"]]
-  :plugins [[lein-ring "0.11.0" :exclusions [org.clojure/clojure]]
-            [lein-cljsbuild "1.1.5" :exclusions [org.clojure/clojure]]
-            [lein-environ "1.1.0"]
-            [lein-figwheel "0.5.10"]]
-  :java-source-paths ["thrift/gen-java"]
-  :cljsbuild {:builds {:app {:figwheel true
-                             :source-paths ["src-cljs"]
-                             :compiler {:output-to "resources/public/cljs/mok.js"
-                                        :output-dir "resources/public/cljs/out"
-                                        :optimizations :none
-                                        :cache-analysis true
-                                        :source-map-timestamp true
-                                        :source-map true}}}}
-  :clean-targets ^{:protect false} [:target-path "target" "resources/public/cljs" "out" "resources/public/prod"]
-  ;;:uberjar-name "mok-standalone.jar"
-  ;; optimization can be :none, :whitespace, :simple, or :advanced
-  :profiles {:uberjar {:omit-source true
-                       :env {:production true}
-                       :aot [mok.core]
-                       :hooks [leiningen.cljsbuild]
-                       :cljsbuild
-                       {:builds {:app
-                                 {:figwheel false
-                                  :source-paths ["src-cljs"]
-                                  :compiler {:output-to "resources/public/cljs/mok.js"
-                                             :output-dir "resources/public/cljs/prod"
-                                             :optimizations :advanced ;;:whitespace :advanced
-                                             :source-map "resources/public/cljs/mok.map"
-                                             :pretty-print false
-                                             :externs ^:replace ["externs/jquery-1.9.js" "externs/spectrum.js"]}}}}} ;; "resources/public/js/spectrum/spectrum.js"
-             :dev {:env {:dev true}
-                   :dependencies [[com.cemerick/piggieback "0.2.1"]
-                                  [figwheel-sidecar "0.5.10"]]
+                 [cljs-ajax "0.7.3"]
+
+                 ;; local storage
+                 [alandipert/storage-atom "1.2.4"]
+
+                 [com.rpl/specter "1.1.1"]
+                 ;; non-essential
+                 [com.taoensso/timbre "4.10.0"]
+
+                 ;; animation
+                 [cljsjs/react-with-addons "15.5.4-0"]
+                 [cljs-pikaday "0.1.4"]
+                 [reanimated "0.6.1"]
+                 ]
+  
+  :plugins [[lein-figwheel "0.5.15"]
+            [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]]
+  
+  :source-paths ["src-cljs"]
+
+:cljsbuild {:builds
+              [{:id "dev"
+                :source-paths ["src-cljs"]
+
+                ;; The presence of a :figwheel configuration here
+                ;; will cause figwheel to inject the figwheel client
+                ;; into your build
+                :figwheel {:on-jsload "mok.core/on-js-reload"
+                           ;; :open-urls will pop open your application
+                           ;; in the default browser once Figwheel has
+                           ;; started and compiled your application.
+                           ;; Comment this out once it no longer serves you.
+                           ;;:open-urls ["http://localhost:3449/index.html"]
+                           }
+
+                :compiler {:main mok.core
+                           :asset-path "js/compiled/out"
+                           :output-to "resources/public/js/compiled/mok.js"
+                           :output-dir "resources/public/js/compiled/out"
+                           :source-map-timestamp true
+                           ;; To console.log CLJS data-structures make sure you enable devtools in Chrome
+                           ;; https://github.com/binaryage/cljs-devtools
+                           :preloads [devtools.preload]}}
+               ;; This next build is a compressed minified build for
+               ;; production. You can build this with:
+               ;; lein cljsbuild once min
+               
+               {:id "min"
+                :source-paths ["src-cljs"]
+                :compiler {:output-to "resources/public/js/compiled/mok.js"
+                           :main mok.core
+                           :language-in :ecmascript5
+                           :language-out :ecmascript5
+                           
+                           :optimizations :advanced
+                           ;; https://clojurescript.org/guides/externs
+                           ;; https://github.com/cljsjs/packages/wiki/Creating-Externs
+                           :infer-externs true
+                           :externs ^:replace ["externs/xfer.js"]
+                           :pretty-print false}}]}
+
+
+  :aliases {"build" ["do"
+                     ["clean"]
+                     ["cljsbuild" "once" "min"]]}
+
+  :figwheel {;; :http-server-root "public" ;; default and assumes "resources"
+             ;; :server-port 3449 ;; default
+             ;; :server-ip "127.0.0.1"
+
+             :css-dirs ["resources/public/css"] ;; watch and update CSS
+
+             ;; Start an nREPL server into the running figwheel process
+             ;; :nrepl-port 7888
+
+             ;; Server Ring Handler (optional)
+             ;; if you want to embed a ring handler into the figwheel http-kit
+             ;; server, this is for simple ring servers, if this
+
+             ;; doesn't work for you just run your own server :) (see lein-ring)
+
+             ;; :ring-handler hello_world.server/handler
+
+             ;; To be able to open files in your editor from the heads up display
+             ;; you will need to put a script on your path.
+             ;; that script will have to take a file path and a line number
+             ;; ie. in  ~/bin/myfile-opener
+             ;; #! /bin/sh
+             ;; emacsclient -n +$2 $1
+             ;;
+             ;; :open-file-command "myfile-opener"
+
+             ;; if you are using emacsclient you can just use
+             :open-file-command "emacsclient"
+
+             ;; if you want to disable the REPL
+             ;; :repl false
+
+             ;; to configure a different figwheel logfile path
+             ;; :server-logfile "tmp/logs/figwheel-logfile.log"
+
+             ;; to pipe all the output to the repl
+             ;; :server-logfile false
+             }
+
+  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.9"]
+                                  [figwheel-sidecar "0.5.15"]
+                                  [com.cemerick/piggieback "0.2.2"]]
+                   ;; need to add dev source path here to get user.clj loaded
+                   :source-paths ["src-cljs" "dev"]
+                   ;; for CIDER
+                   ;; :plugins [[cider/cider-nrepl "0.12.0"]]
                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-                   :source-paths ["src-cljs" "dev" "src-dev"]}}
-  ;; :repositories {"dev-ichpsea" "http://192.168.0.90/nexus/content/groups/public/"}
-  :main mok.core
-  :javac-options ["-target" "1.8" "-source" "1.8"] ;;  "-Xlint:-options"
-  :aliases {"dev-run" ["run" "dev"]}
-  :global-vars {*warn-on-reflection* false}
-  :figwheel {:css-dirs ["resources/public/p/css"]
-             :open-file-command "emacsclient"}
-  ;; :ring {:handler mok.core/app
-  ;;        :init    mok.core/init
-  ;;        :destroy mok.core/destroy}
+                   ;; need to add the compliled assets to the :clean-targets
+                   :clean-targets ^{:protect false} ["resources/public/js/compiled"
+                                                     :target-path]}}
+  
   )
