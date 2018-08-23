@@ -763,7 +763,8 @@
         (doall
          (for [m @msgs
                :let [{:keys [id title abstract cover status uri companyid sex ts appid pv buid]} m
-                     preview? (zero? id)]]
+                     preview? (zero? id)
+                     phone (when preview? (subs uri 0 11))]]
            [:tr {:key (str "msg-list" buid)}
             [:td {:width "205"}
              [:a {:target "_blank" :href (str "/message/" uri)}
@@ -775,7 +776,7 @@
             [:td {:width "275"}
              [:p.news-table-p1 (str "状态: " (if preview? "消息预览" status))]
              [:p.news-table-p1 (str "App: " (appid->title appid))]
-             [:p.news-table-p1 (str "目标: " (companyid->name companyid) " (" companyid ")")]
+             [:p.news-table-p1 (str "目标: " (or phone (str (companyid->name companyid) " (" companyid ")")))]
              [:p.news-table-p1 (str "PV: " pv)]
              [:p.news-table-p2 (unparse datetime-formatter (to-default-time-zone (from-long ts)))]]
             [:td
