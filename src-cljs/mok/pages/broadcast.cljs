@@ -4,7 +4,7 @@
   (:require
    [alandipert.storage-atom       :refer [local-storage]]
    [mok.states :refer [companylist me companyid->name appid->title]]
-   [mok.utils :refer [make-toast pikaday-construct date-formatter
+   [mok.utils :as utils :refer [make-toast pikaday-construct date-formatter
                       datetime-formatter loading-spinner make-spectrum-conf
                       format-date
                       default-error-handler admin? set-title! make-resp-handler]]
@@ -48,7 +48,7 @@
                  "f" "51~60"
                  "g" "60以上"})
 
-(defonce preview-phone (atom ""))
+(defonce preview-phone (local-storage (atom "") ::preview-phone))
 
 (defonce queue-hour (local-storage (atom 20) ::queue-hour))
 (defonce queue-minute (local-storage (atom 24) ::queue-minute))
@@ -117,14 +117,15 @@
 (defn- get-message-list
   [& [replace?]]
   (swap! load-state assoc :searching true)
-  (letfn [(success-fn [{:keys [data]}]
-            (if replace?
-              (reset! msgs data)
-              (swap! msgs concat data))
-            (when (< (count data) 20)
-              (swap! load-state assoc :last true)))]
+  (let [page (:page @load-state)
+        success-fn (fn [{:keys [data]}]
+                     (if replace?
+                       (reset! msgs data)
+                       (swap! msgs concat data))
+                     (when (< (count data) 20)
+                       (swap! load-state assoc :last true)))]
     (GET "/messages.json"
-         {:params (select-keys @load-state [:page])
+         {:params {:page page :with-preview (if (= page 1) "y" "n")}
           :handler (make-resp-handler {:callback-success success-fn})
           :error-handler default-error-handler
           :response-format :json
@@ -529,7 +530,7 @@
         (reset! show-float-dt-picker false)
         (when (:preview bd)
           (t/info "opening" (str "/message/" (:uri data)))
-          (.open js/window (str "/message/" (:uri data)))))
+          (utils/open! (str "/message/" (:uri data))))) 
     2 (do (make-toast :error "Session已过期，请刷新页面并重新登录！"))
     (make-toast :error (or (get-in fails [0 :body :error :message]) msg) "发送失败！"))
   (when-not (:preview bd)
@@ -731,6 +732,17 @@
              :response-format :json
              :keywords? true})))
 
+(defn- delete-preview-message
+  [uri]
+  (let [folder (subs uri 0)]
+    (DELETE "/preview-message" 
+            {:params {:uri uri}
+             :format :json
+             :handler (make-resp-handler {:callback-success (fn [_] (swap! msgs (fn [mlist] (remove #(= uri (:uri %)) mlist))))})
+             :error-handler default-error-handler
+             :response-format :json
+             :keywords? true})))
+
 (defn- delete-msq-queue
   [id title]
   (when (js/confirm (str "确认取消发送" title "？"))
@@ -750,9 +762,9 @@
        [:tbody
         (doall
          (for [m @msgs
-               :let [{:keys [id title abstract cover status uri companyid sex ts appid pv]} m]]
-           ^{:key (str "msg-list" id)}
-           [:tr
+               :let [{:keys [id title abstract cover status uri companyid sex ts appid pv buid]} m
+                     preview? (zero? id)]]
+           [:tr {:key (str "msg-list" buid)}
             [:td {:width "205"}
              [:a {:target "_blank" :href (str "/message/" uri)}
               [:img {:src (str "/message/" cover) :width "164px" :height "108px"}]]]
@@ -761,14 +773,16 @@
              [:p.news-table-p1 title]
              [:p.news-table-p2 abstract]]
             [:td {:width "275"}
-             [:p.news-table-p1 (str "状态: " status)]
+             [:p.news-table-p1 (str "状态: " (if preview? "消息预览" status))]
              [:p.news-table-p1 (str "App: " (appid->title appid))]
              [:p.news-table-p1 (str "目标: " (companyid->name companyid) " (" companyid ")")]
              [:p.news-table-p1 (str "PV: " pv)]
              [:p.news-table-p2 (unparse datetime-formatter (to-default-time-zone (from-long ts)))]]
             [:td
              (if (admin?)
-               [:button.destroy.fa {:on-click #(delete-message id title)} "\uf00d"]
+               [:button.destroy.fa {:on-click #(if (pos? id)
+                                                 (delete-message id title)
+                                                 (delete-preview-message uri))} "\uf00d"]
                "")]]))]])
     {:component-will-mount #(.addEventListener js/window "scroll" fetch-func)
      :component-will-unmount #(.removeEventListener js/window "scroll" fetch-func)})))

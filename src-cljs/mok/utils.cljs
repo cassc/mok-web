@@ -270,3 +270,6 @@
 
 (defn redirect! [loc]
   (set! (.-location js/window) loc))
+
+(defn open! [loc]
+  (.open js/window loc))
