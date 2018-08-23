@@ -27,3 +27,4 @@ pom.xml.asc
 README.html
 README-api.html
 .svn
+resources/public/js/compiled/
