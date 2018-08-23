@@ -1,4 +1,4 @@
-(ns ^:figwheel-always mok.core
+(ns mok.core
   (:refer-clojure :exclude [partial atom flush])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require
@@ -53,14 +53,14 @@
         [:a {:href "#/report-manage"} "举报管理"]]]]]))
 
 
-(defn- get-me
-  []
+(defn- get-me []
   (let [ch (chan)]
     (if @me
       (a/put! ch :done)
       (GET "/me"
            {:handler (fn [{:keys [data]}]
                        (reset! me data)
+                       (t/info "get-me success")
                        (a/put! ch :success))
             :error-handler (fn [err]
                              (a/put! ch :error)
@@ -146,37 +146,29 @@
 ;; Initialize app
 ;; (r/render [#'bdcategories-selector] (.getElementById js/document "bdcategories"))
 
-(defn main-app []
-  (fn []
-    [:div
-     [:div {:class "bk_header"}
-      [:div {:class "bk_wrap"}
-       [:a {:href "#"}
-        [:img {:src "images/bk_logo-haier.png", :class "bk_logo"}]]
-       [:div {:class "bk_info_user"}
-        [:img {:src "images/personIcon.png", :class "personIcon"}]
-        [:span {:class "personName"}
-         [:a {:href "/admin/editPassword"} ]]
-        [:a {:href "/logout" :on-click #(reset! me nil) :class "loginOut"} "退出"]]]]
-     [:div {:class "bk_content"}
-      [:div {:class "bk_wrap"}
-       [:div {:id "leftnavbar", :class "bk_content-left"} " "]
-       [:div {:class "bk_content-right"}
-        [page]]]]
-     [:div {:class "footer-ok"}
-      [:div {:class "wrap-ok", :style {"maxWidth" "1200px"}} ]]]))
-
+(defn header []
+  [:div {:class "bk_wrap"} "\t" 
+   [:a {:href "#"}
+    [:img {:src "images/bk_logo-haier.png", :class "bk_logo"}]]
+   [:div {:class "bk_info_user"}
+    [:img {:src "images/personIcon.png", :class "personIcon"}]
+    [:span {:class "personName"}
+     [:a {:href "/admin/editPassword"} ]]
+    [:a {:href "/logout", :class "loginOut"} "退出"]]])
 
 (defn mount-components []
-  ;;(r/render [#'left-navbar] (.getElementById js/document "leftnavbar"))
-  (r/render [#'main-app] (.getElementById js/document "app"))) 
+  (r/render [#'header] (.getElementById js/document "bk_header"))
+  (r/render [#'left-navbar] (.getElementById js/document "leftnavbar"))
+  (r/render [#'page] (.getElementById js/document "app"))
+  ) 
 
 (defonce init! 
-  (delay (hook-browser-navigation!))) 
-
+  (delay
+   (load-data!)
+   (hook-browser-navigation!))) 
+ 
 (defn ^:export main []
   (t/debug "init page")
-  (load-data!)
   @init!
   (mount-components))
 

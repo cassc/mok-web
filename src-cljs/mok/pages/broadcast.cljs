@@ -48,7 +48,7 @@
                  "f" "51~60"
                  "g" "60以上"})
 
-(defonce preview-phone (atom js/adminPhone))
+(defonce preview-phone (atom ""))
 
 (defonce queue-hour (local-storage (atom 20) ::queue-hour))
 (defonce queue-minute (local-storage (atom 24) ::queue-minute))

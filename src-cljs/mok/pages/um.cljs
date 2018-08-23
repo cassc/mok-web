@@ -31,7 +31,7 @@
    :cnt 20
    :orderby "aid"
    :desc "desc"
-   :query nil})
+   :query ""})
 
 (defonce search-params
   (atom default-search-params))
@@ -262,7 +262,7 @@
                                                      (swap! search-params assoc :page 1)
                                                      (get-userlist true))
                                (s/blank? phone) (do
-                                                  (swap! search-params assoc :query nil :page 1)
+                                                  (swap! search-params assoc :query "" :page 1)
                                                   (get-userlist true))
                                :else nil))}]]
      [userlist-table]
