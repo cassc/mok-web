@@ -58,12 +58,18 @@
     (if @me
       (a/put! ch :done)
       (GET "/me"
-           {:handler (fn [{:keys [data]}]
-                       (reset! me data)
-                       (t/info "get-me success")
-                       (a/put! ch :success))
+           {:handler (fn [{:keys [data code]}]
+                       (if (zero? code)
+                         (do
+                           (t/info "get-me success")
+                           (reset! me data)
+                           (a/put! ch :success))
+                         (do
+                           (reset! me nil)
+                           (a/put! ch :fail))))
             :error-handler (fn [err]
                              (a/put! ch :error)
+                             (reset! me data)
                              (default-error-handler "/me" err))
             :response-format :json
             :keywords? true}))
