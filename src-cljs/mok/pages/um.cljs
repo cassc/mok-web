@@ -158,6 +158,28 @@
         [:div.companyEditShdow-i18-buttons
          [:input.alertViewBox-compilerDelete {:type :button :value "确认" :on-click #(toggle-user-info-dialog u)}]]]]])))
 
+;; com.jianqing.btcontrol/3.0.4 (Android;MHA-AL00;8.0.0)
+(defn parse-android-ua [ua]
+  (let [[[_ app app-version phone phone-os phone-version]] (re-seq #"(.*?)/(.*?)\s+\((.*?);(.*?);(.*)\)?" (or ua ""))]
+    (zipmap [:app :app-version :phone :phone-os :phone-version]
+            [app app-version phone phone-os phone-version])))
+
+(defn parse-ios-ua [ua]
+  (let [[app mre] (s/split ua #"/")
+        [app-version mre] (s/split mre #"\(")
+        [phone phone-os] (s/split mre #";")]
+    (zipmap [:app :app-version :phone :phone-os :phone-version]
+            [app app-version phone phone-os phone-version])))
+
+
+(defn parse-ua [ua]
+  (try
+    (if (s/includes? (s/lower-case ua) "iphone")
+      (parse-ios-ua ua)
+      (parse-android-ua ua))
+    (catch :default e
+      (t/warn "ignore parse-ua error" ua e))))
+
 (def userlist-table
   (with-meta
     (fn []
@@ -189,9 +211,10 @@
         [:tbody
          (doall
           (for [u @userlist
-                :let [{:keys [aid company_id phone email haier qq sina_blog weixin register_time measure_time last_login roles with-device status phone phone-os phone-version app device scale]} u
+                :let [{:keys [aid company_id phone email haier qq sina_blog weixin register_time measure_time last_login roles with-device status phone phone-os phone-version app device scale ua]} u
                       company-name (cid->name company_id)
-                      manual? (and measure_time (not with-device))]]
+                      manual? (and measure_time (not with-device))
+                      {:keys [app app-version phone phone-os phone-version]} (parse-ua ua)]]
             ^{:key aid}
             [:tr 
              [:td aid]
@@ -202,8 +225,8 @@
              [:td register_time]
              [:td measure_time]
              [:td last_login]
-             [:td device]
-             [:td app]
+             [:td (or phone-os "")]
+             [:td app-version]
              [:td scale]
              [:td (status-text status)]
              [:td [:a {:href "javascript:;" :on-click #(toggle-user-info-dialog u)} "查看"]]]))]]

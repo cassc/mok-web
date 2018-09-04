@@ -69,7 +69,7 @@
                            (a/put! ch :fail))))
             :error-handler (fn [err]
                              (a/put! ch :error)
-                             (reset! me data)
+                             (reset! me nil)
                              (default-error-handler "/me" err))
             :response-format :json
             :keywords? true}))
