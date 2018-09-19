@@ -33,7 +33,7 @@
 (defonce mblog-details (atom nil))
 (defonce with-mblog-weight-dialog (atom nil))
 (defonce mblog-ids-to-delete (atom #{}))
-
+(defonce mblog-reply-store (atom {}))
 
 (defn- toggle-mid-to-delete [mid]
   (swap! mblog-ids-to-delete (fn [xs] (if (xs mid) (disj xs mid) (conj xs mid)))))
@@ -65,6 +65,17 @@
             :response-format :json
             :keywords? true
             :finally #(reset! loading? nil)}))))
+
+(defn loag-mblog-reply [parent-id]
+  (GET "/mm/mblog-reply"
+       {:params {:parent_id parent-id}
+        :handler (make-resp-handler
+                  {:callback-success
+                   #(let [data (:data %)]
+                      (swap! mblog-reply-store assoc parent-id data))})
+        :error-handler (partial default-error-handler "/mm/mblog-reply")
+        :response-format :json
+        :keywords? true}))
 
 ;; (defn remove-local-mblog-by-id! [id]
 ;;   (swap! mblog-list-store (fn [xs] (remove #(= id (:id %)) xs))))
@@ -179,13 +190,24 @@
         [:tbody
          (doall
           (for [{:keys [id msg account_id ts pic nickname company phone haier likes replies  weight ispop pop_weight] :as mblog} (take @display-num-state @mblog-list-store)]
-            ^{:key id}
-            [:tr
+            [:tr {:key id}
              [:td [:a {:href "javascript:;"} id]]
              [:td {:style {:max-width "80px" :overflow-x "hidden" :padding "2px"}}
-              [:a {:href "javascript:;"}
-               [:img {:style {:width "120px" :height "120px" :border-radius "5px"} :src (str "/mm/pic/" pic)}]
-               [:p msg]]]
+              [:div 
+               (when-not (s/blank? pic)
+                 [:img {:style {:max-width "120px" :max-height "120px" :border-radius "5px"} :src (str "/mm/pic/" pic)}])
+               [:div {:style {:display :flex :font-weight :bold :text-align :left
+                              :padding-top "1rem"}}
+                msg]
+               (doall
+                (for [{:keys [msg id]} replies]
+                  [:div {:key (str "mr-" id) :style {:display :flex :justify-content :space-between :text-align :left :padding-top "1rem"}} 
+                   [:div "- " msg]
+                   [:a {:href "javascript:;"
+                        :on-click #(when (js/confirm (str "删除此评论？\n" msg)) 
+                                     (delete-mblog id))
+                        :style {:display :block}} 
+                    [:i.fa.fa-trash]]]))]]
              [:td (str (if (= 1 ispop) (or pop_weight 0) "NA") "/" (or weight 0))]
              [:td {:style {:max-width "20px" :overflow-x "hidden"}} nickname]
              [:td [:a {:href "javascript:;"} (or phone haier)]]
