@@ -1,0 +1,154 @@
+// -*- mode: css -*-
+.popup {
+  height: 100vh;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba($color-black, .8);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all .1s ease-out;
+  
+  /* @supports (-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px)) { */
+  /*   -webkit-backdrop-filter: blur(10px); */
+  /*   backdrop-filter: blur(10px); */
+  /*   background-color: rgba($color-black, .3); */
+  /* } */
+
+  &__body{
+    padding: 2rem 2.4rem;
+    @include absCenter;
+    width:40rem;
+    background-color: $color-white;
+    box-shadow: 0 2rem 4rem rgba($color-black, .2);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0); 
+    transition: all .1s ease-out;
+    max-height: 100vh;
+    /* overflow-y: scroll; */
+
+    @include respond(phone){
+      width: 100%;
+      padding: 1.5rem 1rem;
+    }
+  }
+
+  &__header{
+    display: flex;
+    margin-bottom: 1.85rem;
+    margin-top: 1rem;
+    align-items: center;
+  }
+
+  &__header-icon{
+    fill: currentColor;
+    width: 2rem;
+    height: 2rem;
+    margin-right: 1rem;
+    margin-top: -4px;
+  }
+  &__header-title{
+    @include homeTitlesFont;
+    text-transform: capitalize;
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  &__content {
+    margin-bottom: 2rem;
+  }
+
+  &__btn-group{
+    margin-left: auto;
+    & .btn{
+      &:not(:last-child){
+        margin-right: 1rem;
+      }
+    }
+  }
+
+  &__btn{
+    &:not(:last-child){
+      margin-right: 2rem;
+    }
+  }
+  
+  &__btn-ok{
+    padding: 0.6rem 1.15rem !important;
+    margin-left: auto;
+  }
+
+  &__btn-cancel{
+    padding: 0.6rem 1.15rem !important;
+    margin-left: auto;
+  }
+
+  &__close{
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 1.2rem;
+    height: 1.2rem;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    
+    &:hover{
+      fill: red;
+    }
+
+    &--hidden{
+      display: none;
+    }
+    
+  }
+
+  &__close-icon{
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+
+
+  &--warning &__header-title{
+    color:$color-red;
+  }
+
+  &--warning &__header-icon{
+    color:$color-red;
+  }
+
+  &--open{
+    opacity: 1;
+    visibility:visible;
+  }
+  &--open &__body{
+    opacity: 1;
+    visibility:visible;
+    transform: translate(-50%, -50%) scale(1);
+    transition: all .1s ease-out; 
+  }
+
+  &__bitcoin-header-icon{
+    /* width: 2rem; */
+    height: 3rem;
+    margin-right: 1rem;
+  }
+
+  &__header-danger-icon{
+    width: 2rem;
+    height: 2rem;
+    color: $color-red;
+    fill: currentColor;
+    margin-right: .9rem;
+  }
+
+  &__device-title-input{
+    @include cInput;
+  }
+}

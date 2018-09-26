@@ -1,0 +1,46 @@
+.container{
+  min-height: 80vh;
+  padding: 0 calc((100vw - #{$container-width}) / 2);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  @include respond(tab-land){
+    width: $container-width-tab-land;
+  }
+  @include respond(tab-port){
+    width: $container-width-tab-port;
+  }
+  @include respond(phone){
+    width: $container-width-phone;
+  }
+  
+  &--wallet{
+    margin-top: 4rem;
+    @include respond(phone){
+      margin-top: 2rem;
+      overflow-x: hidden;
+    }
+  }
+}
+
+.main{
+  display: flex;
+  flex-direction: column;
+  margin-left: 4rem;
+  width: 100%;
+  
+  @include respond(phone){
+    margin-left: 0;
+    min-width: 0;
+    margin-bottom: 2rem; 
+    width: 95vw; 
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  &__desktop{
+    @include respond(phone){
+      display: none;
+    }
+  }
+}

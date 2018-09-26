@@ -168,8 +168,8 @@
   (let [[app mre] (s/split ua #"/")
         [app-version mre] (s/split mre #"\(")
         [phone phone-os] (s/split mre #";")]
-    (zipmap [:app :app-version :phone :phone-os :phone-version]
-            [app app-version phone phone-os phone-version])))
+    (zipmap [:app :app-version :phone :phone-os]
+            [app app-version phone phone-os])))
 
 
 (defn parse-ua [ua]
@@ -276,7 +276,7 @@
       [:span "管理"]
       "  >  "
       [:span.bkcrc-seceondT "用户管理"]]
-     [:div.manager-filter
+     [:div.um__head-opts
       [:input {:type :text :placeholder "按手机号或aid过滤" :value (:query @search-params)
                :on-change #(let [phone (-> % .-target .-value s/trim)]
                              (swap! search-params assoc :query phone)
@@ -287,6 +287,7 @@
                                (s/blank? phone) (do
                                                   (swap! search-params assoc :query "" :page 1)
                                                   (get-userlist true))
-                               :else nil))}]]
+                               :else nil))}]
+      [:a.btn-light.um__add-user {:href "javascript:;"} "添加用户"]]
      [userlist-table]
      [loading-spinner (:searching @search-state)]]))

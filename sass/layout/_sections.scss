@@ -1,0 +1,645 @@
+.section-1{
+  width: 100%;
+  background-image: url('/img/banner@2x.png'); 
+  background-size: cover;
+  position: relative;
+
+  @include respond(phone){
+    background-position: center;
+  }  
+
+  &__body{
+    height: 45rem;
+    margin: 0 auto;
+    width: $container-width;
+    height: 30vw;
+    @include respond(tab-land){
+      width: $container-width-tab-land;
+      height: 35vw;
+    }
+    @include respond(tab-port){
+      width: $container-width-tab-port;
+    }
+    @include respond(phone){
+      width: $container-width-phone;
+      height: 21.58rem;
+    }
+  }
+  
+  &__title{
+    font-family: Roboto;
+    font-weight: 300;
+    padding-top: 6.03rem;
+    font-size: 3rem;
+    position: relative; 
+    color: $color-blue-sky;
+    text-transform: capitalize;
+    line-height: 1.5;
+
+    & > p{
+      font-family: Helvetica, Arial;
+      font-size: 1rem;
+      font-weight: 300;
+      margin-top: -1rem;
+      font-style: italic;
+    }
+    
+    @include respond(tab-port){
+      padding-top: .75rem;
+      font-size: 3rem;
+      margin-left: 0rem;
+    }
+
+    @include respond(tab-port){
+      font-size: 2.5rem;
+    }
+    
+    
+    &::after{
+      position: absolute;
+      left: 0;
+      content: "";
+      display: block;
+      width: $index-section-header-content-width;
+      height: 1px;
+      background-color: $color-blue;
+      @include respond(phone){
+        width: 50vw;
+      }  
+    }
+  }
+
+  &__content{
+    font-size: 1rem;
+    font-family: Roboto;
+    font-weight: 500;
+    max-width: $index-section-header-content-width;
+    margin-top: 1.65rem;
+    color: $color-blue-sky;
+
+    @include respond(tab-port){
+      margin-top: .75rem;
+      & > p{
+        display: none;
+      }
+    }
+    
+    ul{
+      padding-left: 1.2rem;
+      @include respond(tab-port){
+        font-size: 1.2rem;
+      }
+      @include respond(phone){
+        font-size: 1rem;
+      }
+      
+    }
+
+    @include respond(phone){
+      max-width: 50vw;
+    }
+    
+  }
+
+  &__coin{
+    display: grid;
+    padding-left: 1.2rem;
+    margin-top: 0.9rem;
+    grid-template-columns: repeat(3, minmax(max-content, 1fr));
+    grid-auto-flow: 1;
+    position: relative;
+    padding-bottom: .8rem;
+    margin-bottom: 1.35rem;
+
+    @include respond(tab-port){
+      font-size: 1.2rem;
+      margin-top: 0;
+    }
+
+    @include respond(phone){
+      font-size: .8rem;
+    }
+    
+    &-item{
+      &::before{
+        content: "☑";
+        left: 0;
+        font-size: 1rem;
+        padding-right: .25rem;
+      }
+    }
+
+    &::after{
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      content: "";
+      display: block;
+      width: $index-section-header-content-width;
+      height: 1px;
+      background-color: $color-blue;
+      @include respond(phone){
+        width: 50vw;
+      }  
+    }
+  }
+
+  &__conn{
+    position: absolute;
+    top: 100%;
+    transform: translateY(-30%);
+    right: 0;
+    width:43.05rem;
+    background:rgba(255,255,255,1);
+    box-shadow:2rem 0rem 8rem rgba(0,0,0,0.25);
+    border-radius: 1rem;
+    padding: 2rem;
+    font-size:1rem;
+    font-weight: bold;
+
+    @include respond(tab-port){
+      left: 50%;
+      transform: translateX(-50%) translateY(-3.59rem);
+      text-align: center;
+      padding: 1.5rem;
+    }
+    @include respond(phone){
+      width: $container-width-phone;
+      transform: translateX(-50%) translateY(-2.59rem);
+    }
+  }
+
+  &__with-device{
+    margin-bottom: 1.95rem;
+    &--btn{
+      color: var(--color-primary-light);
+      font-size: 0.9rem;
+    }
+  }
+
+  &__no-device{
+    &--btn{
+      color: var(--color-primary-light);
+      font-size: 0.9rem;
+    }
+  }
+  
+  &__label{
+    margin-bottom: 1rem;
+  }
+}
+
+.section-2{
+  
+  &__body{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    width: $container-width;
+    margin: 0 auto;
+    margin-bottom: 6.6rem;
+    margin-top: 14rem;
+    @include respond(tab-land){
+      width: $container-width-tab-land;
+      margin-top: 10rem;
+    }
+    @include respond(tab-port){
+      width: $container-width-tab-port;
+      flex-direction: column;
+    }
+    @include respond(phone){
+      width: $container-width-phone;
+      margin-bottom: 5rem;
+    }
+  }
+  &__left{    
+    order: 2;
+    @include respond(tab-port){
+      margin: 0 auto;
+    }
+  }
+
+  &__left-image{
+    width: 33.8rem;
+    @include respond(tab-port){
+      width: 80vw;
+    }
+    @include respond(phone){
+      width: 95vw;
+      transform: translateY(3rem);
+    }
+  }
+  
+  &__right{
+    order: 3;
+    width: 40%;
+    @include respond(tab-port){
+      margin-top: 4rem;
+      margin-bottom: 2rem;
+      order: 1;
+      transform: translateY(0rem);
+      width: $container-width-tab-port;
+    }
+    @include respond(phone){
+      width: $container-width-phone;
+      margin-top: 4rem;
+    }
+  }
+  &__title{
+    @include homeTitlesFont;
+    text-align: right;
+    margin-bottom: 3rem;
+    @include respond(tab-port){
+      text-align: center;
+      font-size: 1.7rem;
+      margin-bottom: 1.4rem;
+    }
+  }
+  &__content{
+    text-align: right;
+    font-size:1.3rem;
+    @include respond(tab-port){
+      text-align: center;
+      color: $color-light-gray-3;
+    }
+  }
+}
+
+.section-3{
+  
+  &__body{
+    margin: 0 auto;
+    width: $container-width;
+    @include respond(tab-land){
+      width: $container-width-tab-land;
+    }
+    @include respond(tab-port){
+      width: $container-width-tab-port;
+    }
+    @include respond(phone){
+      width: $container-width-phone;
+    }
+  }
+  
+  
+  
+  &__title{
+    position: relative;
+    line-height: 1;
+    @include homeTitlesFont;
+    
+
+    &--line-1{
+      display: block;
+      @include respond(tab-port){
+        text-align: center;
+      }
+    }
+    
+    &--line-2{
+      background-color: $color-white;
+      padding-right: 2rem;
+      @include respond(tab-port){
+        display: none;
+      }
+    }
+
+    &::after{
+      position: absolute;
+      left: 0;
+      bottom: 0.5rem;
+      content: "";
+      display: inline-block;
+      width:100%;
+      height:4px;
+      background-color:var(--color-primary);
+      z-index: -1;
+
+      @include respond(tab-port){
+        display: none;
+      }
+    }
+  }
+
+  &__content{
+    margin-top: 2.1rem;
+    font-size: 1.5rem;
+    @include respond(tab-port){
+      color: $color-light-gray-3;
+      font-size: 1.3rem;
+      text-align:center;
+      margin-top: 1.4rem;
+    }
+  }
+
+
+  &__img-holder{
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    position: relative;
+    @include respond(tab-port){
+      flex-direction: column;
+    }
+    
+    &::after{
+      content: "";
+      z-index: -1;
+      position: absolute;
+      display: block;
+      top: -2rem;
+      left: 4.35rem;
+      width:43.7rem;
+      height:13.85rem;
+      background:rgba(var(--color-primary-light),1);
+      opacity:0.1;
+      border-radius: 0.5rem;
+      @include respond(tab-port){
+        display:none;
+      }
+    }
+  }
+
+  &__img-left-holder{
+    margin-right: 1.2rem;
+    width: 50%;
+    @include respond(tab-port){
+      width: $container-width-phone;
+      margin: 0 auto;
+      text-align:center;
+    }
+  }
+  
+  &__img-left{
+    width: 100%;
+    @include respond(tab-port){
+      width: 80vw;
+      margin: 0 auto;
+    }
+  }
+
+
+  &__img-right-holder{
+    width: 50%;
+    @include respond(tab-port){
+      display:none;
+    }
+  }
+
+  &__img-right{
+    width: 100%;
+  }
+}
+
+
+// on phone TODO displayed above section-3
+.section-4{
+  
+  &__body{
+    margin: 0 auto;
+    width: $container-width;
+    margin-top: 1.05rem;
+    padding-bottom: 7.4rem;
+    border-bottom: 1px solid $color-light-gray;
+    @include respond(tab-land){
+      width: $container-width-tab-land;
+    }
+    @include respond(tab-port){
+      width: $container-width-tab-port;
+      padding-bottom: 0rem;
+      margin-top: 4.75rem;
+      border:none;
+    }
+    @include respond(phone){
+      width: $container-width-phone;
+      margin-top: 3rem;
+    }
+  }
+
+  &__img{
+    display: none;
+    @include respond(phone){
+      display: block;
+      width: 80vw;
+      margin: 0 auto;
+    }
+  }
+  
+
+  &__title{
+    @include homeTitlesFont;
+    text-align: right;
+
+    &--line-1{
+      display: block;
+    }
+
+    @include respond(phone){
+      text-align: center;
+    }
+  }
+  
+  &__content{
+    margin-top: 2.15rem;
+    text-align: right;
+    font-size:1.5rem;
+
+    @include respond(phone){
+      text-align: center;
+      margin-top: 1.55rem;
+      margin-bottom: 1.35rem;
+    }
+  }
+}
+
+.section-spec{
+  overflow-x: hidden;
+  &__body{
+    width: $container-width;
+    margin: 0 auto;
+    margin-top: 2rem;
+    padding-bottom: 4.9rem;
+    position: relative;
+    
+    @include respond(tab-land){
+      width: $container-width-tab-land;
+    }
+    @include respond(tab-port){
+      width: $container-width-tab-port;
+      padding-top: 2.4rem;
+      padding-bottom: 0rem;
+      
+      &::before,
+      &::after {
+        position: absolute;
+        content: "";
+        background-color: $color-light-gray;
+        height: 8px;
+        width: 100%;
+        transform: scaleX(2);
+      }
+
+      &::before{
+        top: 0;
+        left: 0;
+      }
+
+      &::after{
+        bottom: 4px;
+        left: 0;
+      }
+      
+    }
+    @include respond(phone){
+      width: $container-width-phone;
+      
+    }
+  }
+  
+  &__title{
+    @include homeTitlesFont;
+    text-align: center;
+  }
+  
+  &__content{
+    margin-top: 4.85rem;
+    display: flex;
+    justify-content: start;
+    flex-wrap: wrap;
+    @include respond(tab-port){
+      margin-left:auto;
+      margin-right:auto;
+      margin-top: 2rem;
+    }
+    @include respond(phone){
+
+    }
+  }
+
+  &__spec{
+    min-width: 15rem;
+    margin-bottom: 1.85rem;
+    font-size:0.9rem;
+    @include respond(phone){
+      width: 50%;
+      min-width: 0;
+    }
+    
+    
+    &--name{
+      color:rgba($color-light-gray-2,1);
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+      @include respond(phone){
+        margin-bottom: 0.2rem;
+      }
+    }
+
+    &--value{
+      font-weight: bold;
+    }
+
+    @include respond(tab-port){
+      border-bottom: 1px solid $color-light-gray;
+      margin-bottom: .9rem;
+      padding-bottom: .9rem;
+    }
+  }
+}
+
+.section-team{
+  background-color:$color-black;
+  color: $color-white;
+  &__body{
+    width: $container-width;
+    margin: 0 auto;
+    background-image: url('/img/chess.png');
+    background-size: cover;
+    background-repeat:no-repeat;
+    padding-bottom:11rem;
+    @include respond(tab-land){
+      width: $container-width-tab-land;
+    }
+    @include respond(tab-port){
+      width: $container-width-tab-port;
+      margin-top: -1rem;
+      text-align: center;
+      padding-top: 3rem;
+      padding-bottom:3rem;
+    }
+    @include respond(phone){
+      width: $container-width-phone;
+    }
+  }
+  
+  &__title{
+    padding-top: 4.4rem;
+    padding-bottom:2.85rem;
+    @include homeTitlesFont;
+    
+    @include respond(tab-port){
+      padding-top: 0;
+      padding-bottom: 3rem;
+    }
+  }
+
+  &__content{
+    display:flex;
+    @include respond(tab-port){
+      flex-wrap: wrap;
+    }
+  }
+  
+  &__member{
+    display: flex;
+
+    &--photo{
+      margin-right: 2rem;
+      background-color: $color-white;
+    }
+
+    &--holder{
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    &--title{
+      @include homeTitlesFont;
+      font-size: 1.2rem;
+      margin-bottom: 1.1rem;
+      margin-top: 2.55rem;
+
+      @include respond(tab-port){
+        font-size: 1.3rem;
+      }
+    }
+
+    &--name{
+      @include homeTitlesFont;
+      margin-bottom: 2.1rem;
+    }
+
+    @include respond(tab-port){
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  &__link-holder{
+    margin-top: 3.2rem;
+    font-size: 0.9rem;
+    @include respond(tab-port){
+      font-size: 1.6rem;
+    }
+  }
+  
+  &__link {
+    &,
+    &:link,
+    &:visited{
+      color: var(--color-primary-light);
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+  }
+}

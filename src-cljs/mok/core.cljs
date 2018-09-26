@@ -7,6 +7,7 @@
    [mok.pages.company :refer [get-companylist get-all-langs]]
    [mok.pages.broadcast :refer [broadcast messages msg-queue]]
    [mok.pages.um :refer [um]]
+   [mok.pages.admin :refer [admin-page]]
    [mok.pages.banner :refer [banner-manage]]
    [mok.pages.feedback-manage :refer [feedback-manage]]
    [mok.pages.mblog :refer [mblog-manage]]
@@ -95,6 +96,7 @@
    :messages #'messages
    :msg-queue #'msg-queue
    :um #'um
+   :admin #'admin-page
    :feedback-manage #'feedback-manage
    :mblog-manage #'mblog-manage
    :banner-manage #'banner-manage
@@ -129,6 +131,9 @@
 (secretary/defroute "/um" []
   (session/put! :page :um))
 
+(secretary/defroute "/admin" []
+  (session/put! :page :admin))
+
 (secretary/defroute "/banner-manage" []
   (session/put! :page :banner-manage))
 (secretary/defroute "/acts-manage" []
@@ -157,9 +162,9 @@
    [:a {:href "#"}
     [:img {:src "images/bk_logo-haier.png", :class "bk_logo"}]]
    [:div {:class "bk_info_user"}
-    [:img {:src "images/personIcon.png", :class "personIcon"}]
-    [:span {:class "personName"}
-     [:a {:href "/admin/editPassword"} ]]
+    [:a {:href "#/admin"}
+     [:img {:src "images/personIcon.png", :class "personIcon"}]
+     [:span {:class "personName"} (:username @me "")]]
     [:a {:href "/logout", :class "loginOut"} "退出"]]])
 
 (defn mount-components []

@@ -1,0 +1,58 @@
+// -*- mode: css -*-
+
+.btn-inverse{
+  &,
+  &:link,
+  &:visited {
+    background-color:$color-light-gray-8;
+    color: var(--color-primary);
+    @include linkButton;
+    text-transform: capitalize;
+    border: 2px solid $color-light-gray;
+    transition: all .2s ease-out;
+  }
+
+  &:hover{
+    background-color:$color-light-gray-4;
+    // border-color: var(--color-primary);
+  }
+}
+
+
+.btn-light { 
+  &,
+  &:link,
+  &:visited {
+    font-size: .8rem;
+    color:$color-black;
+    /* background-image: linear-gradient($color-white, $color-light-gray); */
+    // border: 2px solid $color-light-gray-7;
+    text-decoration: none;
+    padding: 0.7rem 1.5rem;
+    padding-bottom: .55rem;
+    display: inline-block;
+    border-radius: 4px;
+    position: relative;
+    line-height: 1;
+
+    //Change for the <button> element
+    background-color: $color-white;
+    border: 1px solid #c1c1c1;
+    cursor: pointer;
+    transition: all .2s ease-out;
+  }
+
+  &:hover{
+    /* background-image: linear-gradient(rgba($color-light-gray, .1), rgba($color-light-gray-3, .3)); */
+    background-color: #f8f8f8;
+  }
+
+  &--disabled{
+    background-color: $color-light-gray !important;
+    color: $color-light-gray-2 !important;
+    border-color: $color-light-gray-7 !important;
+    cursor: not-allowed !important;
+  }
+}
+
+

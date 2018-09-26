@@ -1,0 +1,16 @@
+.um{
+  &__head-opts{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+
+    & > input{
+      border:none;
+      border-bottom: 1px solid $color-black;
+    }
+  }
+  &__add-user{
+    margin-left:auto;
+    font-size: .8rem;
+  }
+}

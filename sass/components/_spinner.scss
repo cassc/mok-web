@@ -1,0 +1,14 @@
+.app__spinner{
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  &-icon{
+    width: 5rem;
+    height: 5rem;
+    position: absolute;
+    top: 6rem;
+    left: 45%;
+    fill: var(--color-primary-light);
+    animation: rotating 2s linear infinite;
+  }
+}
