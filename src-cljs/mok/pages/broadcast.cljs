@@ -5,9 +5,9 @@
    [alandipert.storage-atom       :refer [local-storage]]
    [mok.states :refer [companylist me companyid->name appid->title]]
    [mok.utils :as utils :refer [make-toast pikaday-construct date-formatter
-                      datetime-formatter loading-spinner make-spectrum-conf
-                      format-date
-                      default-error-handler admin? set-title! make-resp-handler]]
+                                datetime-formatter loading-spinner make-spectrum-conf
+                                format-date user-has-right?
+                                default-error-handler admin? set-title! make-resp-handler]]
    [clojure.string :as s]
    [taoensso.timbre :as t]
    [reagent.core :as r :refer [partial atom]]
@@ -780,7 +780,7 @@
              [:p.news-table-p1 (str "PV: " pv)]
              [:p.news-table-p2 (unparse datetime-formatter (to-default-time-zone (from-long ts)))]]
             [:td
-             (if (admin?)
+             (if (user-has-right? :broadcast)
                [:button.destroy.fa {:on-click #(if (pos? id)
                                                  (delete-message id title)
                                                  (delete-preview-message uri))} "\uf00d"]
@@ -852,7 +852,7 @@
                [:p.news-table-p2 [:b (str "预计发送时间：" (unparse datetime-formatter (to-default-time-zone (from-long queue_ts))))]]
                [:p.news-table-p2 (str "草稿生成时间：" (unparse datetime-formatter (to-default-time-zone (from-long draft_ts))))]]
               [:td
-               (if (admin?)
+               (if (user-has-right? :broadcast)
                  [:button.destroy.fa {:title "删除"
                                       :on-click #(delete-msq-queue parts_id title)} "\uf00d"]
                  "")]]))]])

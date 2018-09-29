@@ -15,7 +15,7 @@
    [secretary.core :as secretary :include-macros true]
    [goog.events :as events]
    [goog.history.EventType :as EventType]
-   [ajax.core :refer [GET DELETE POST]]
+   [ajax.core :refer [GET DELETE POST PUT]]
    [cljs-time.format :refer [unparse formatter parse show-formatters]]
    [cljs-time.coerce :refer [from-long]]
    [cljs-time.core :refer [date-time now time-zone-for-offset to-default-time-zone]])
@@ -25,6 +25,10 @@
 (defonce userlist (atom nil))
 (defonce pop-user-info (atom nil))
 (defonce userstats (atom nil))
+(defonce active-tab (atom :userlist))
+
+(defn- show-tab [ky]
+  (reset! active-tab ky))
 
 (defonce default-search-params
   {:page 1
@@ -183,7 +187,7 @@
 (def userlist-table
   (with-meta
     (fn []
-      [:div
+      [:div {:class (if (= :userlist @active-tab) "show" "hide")}
        [:table.manage-table {:cell-padding 0 :cell-spacing 0}
         [:thead
          [:tr
@@ -235,6 +239,40 @@
     {:component-will-mount #(.addEventListener js/window "scroll" load-more)
      :component-will-unmount #(.removeEventListener js/window "scroll" load-more)}))
 
+(def default-user {:phone ""})
+
+(defonce user-store (atom default-user))
+
+(defn- add-user [params]
+  (PUT "/user"
+       {:params params
+        :format :json
+        :response-format :json
+        :keywords? true
+        :timeout 60000
+        :handler (fn [{:keys [code msg]}]
+                   (if (zero? code)
+                     (do
+                       (js/alert "创建成功！")
+                       (reset! user-store default-user)
+                       (get-userlist true)
+                       (show-tab :userlist))
+                     (js/alert msg)))
+        :error-handler default-error-handler}))
+
+(defn user-add-field []
+  [:div {:class (if (= :user-add @active-tab) "show" "hide")}
+   [:div.um__row
+    [:label.um__label "手机号"]
+    [:input.um__input {:type :text
+                       :value (:phone @user-store)
+                       :on-change #(swap! user-store assoc :phone (-> % .-target .-value))}]]
+   
+   [:div.um__btn-group
+    (when-not (s/blank? (:phone @user-store))
+      [:a.btn-light {:href "javascript:;" :on-click #(add-user @user-store)} "创建"])
+    [:a.btn-light {:href "javascript:;" :on-click #(show-tab :userlist)} "取消"]]])
+
 
 (defn- make-age-stats-string [age-dist]
   (reduce (fn [ss {:keys [age cnt percent]}]
@@ -276,7 +314,7 @@
       [:span "管理"]
       "  >  "
       [:span.bkcrc-seceondT "用户管理"]]
-     [:div.um__head-opts
+     [:div.um__head-opts {:class (if (= :userlist @active-tab) "show" "hide")}
       [:input {:type :text :placeholder "按手机号或aid过滤" :value (:query @search-params)
                :on-change #(let [phone (-> % .-target .-value s/trim)]
                              (swap! search-params assoc :query phone)
@@ -288,6 +326,7 @@
                                                   (swap! search-params assoc :query "" :page 1)
                                                   (get-userlist true))
                                :else nil))}]
-      [:a.btn-light.um__add-user {:href "javascript:;"} "添加用户"]]
+      [:a.btn-light.um__add-user {:href "javascript:;" :on-click #(show-tab :user-add)} "添加用户"]]
      [userlist-table]
+     [user-add-field]
      [loading-spinner (:searching @search-state)]]))

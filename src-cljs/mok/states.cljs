@@ -2,7 +2,6 @@
   "Stores global states"
   (:refer-clojure :exclude [atom flush])
   (:require
-   [ajax.core :refer [GET POST PUT DELETE]]
    [reagent.core :as r :refer [atom]]))
 
 (defonce companylist (atom []))

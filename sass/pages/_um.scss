@@ -13,4 +13,31 @@
     margin-left:auto;
     font-size: .8rem;
   }
+
+  &__row{
+    margin-bottom: 1rem;
+    margin-top: .5rem;
+    display: flex;
+    align-items:center;
+    justify-content: space-between;
+    max-width: 25rem;
+  }
+
+  &__label{
+    font-weight:bold;
+    font-size:.8rem;
+  }
+
+  &__input{
+    @include cInput;
+  }
+
+  &__btn-group{
+    display:flex;
+
+    & > a {
+      margin-right: 2rem;
+    }
+  }
+  
 }

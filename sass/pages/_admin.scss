@@ -1,4 +1,4 @@
-$field-width: 30rem;
+$field-width: 80%;
 
 .admin{
   &__container{
@@ -60,5 +60,29 @@ $field-width: 30rem;
     justify-content: space-around;
     margin-top:1rem;
     
+  }
+
+  &__field-title-hint{
+    font-size: .8rem;
+    margin-left: 1rem;
+  }
+
+  &__field-long-input{
+    width: 15rem;
+  }
+
+  &__item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding-bottom: 1rem;
+  }
+
+  &__item-uid{
+    font-weight:bold;
+  }
+
+  &__item-save-btn{
+    margin-right: 1rem;
   }
 }

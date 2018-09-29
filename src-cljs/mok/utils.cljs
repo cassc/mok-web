@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [partial atom flush])
   (:require
    [clojure.string :as s]
-   [ajax.core :refer [GET POST PUT DELETE]]
+   [ajax.core :refer [GET PUT DELETE]]
    [taoensso.timbre :as t]
    [reagent.core :as r :refer [partial atom dom-node]]
    [reagent.session :as session]
@@ -237,8 +237,21 @@
    :broadcast 2r1000
    :usermanage 2r10000})
 
+(def rightcode-bit-map
+  {2 {:key :feedback :title "用户反馈"}
+   3 {:key :broadcast :title "推送消息"}
+   4 {:key :usermanage :title "用户管理"}
+   6 {:key :mblog :title "社区活动"}})
+
+(def map-rightcode
+  {:feedback {:key :feedback :title "用户反馈" :n 2}
+   :broadcast {:key :broadcast :title "推送消息" :n 3}
+   :usermanage {:key :usermanage :title "用户管理" :n 4}
+   :mblog {:key :mblog :title "社区活动" :n 6}})
+
 (defn user-has-right? [right-key]
-  (pos? (bit-and (:rightcode @me) (right-key rights-map))))
+  (when-let [n  (get-in map-rightcode [right-key :n])]
+    (bit-test (:rightcode @me) n)))
 
 (defn format-date [d]
   (when d
@@ -273,3 +286,4 @@
 
 (defn open! [loc]
   (.open js/window loc))
+

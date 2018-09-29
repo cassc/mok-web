@@ -17,7 +17,7 @@
    [cljs-pikaday.reagent :as pikaday]
    [reagent.debug :as d :include-macros true]
    [secretary.core :as secretary :include-macros true]
-   [ajax.core :refer [GET POST PUT DELETE]]
+   [ajax.core :refer [GET PUT DELETE]]
    [cljs-time.format :refer [unparse formatter parse show-formatters]]
    [cljs-time.coerce :refer [from-long]]
    [cljs-time.core :refer [date-time now time-zone-for-offset to-default-time-zone]]))

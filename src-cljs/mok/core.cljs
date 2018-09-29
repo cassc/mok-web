@@ -14,7 +14,7 @@
    [mok.pages.acts :refer [acts-manage]]
    [mok.pages.report :refer [report-manage]]
    
-   [ajax.core :refer [GET POST]]
+   [ajax.core :refer [GET]]
    [goog.events :as events]
    [goog.history.EventType :as EventType]
    [secretary.core :as secretary :include-macros true]
@@ -37,21 +37,31 @@
           [:a {:href "#/messages"} "历史消息"]]
          [:li {:class (when (= (session/get :page) :msg-queue) "bk-li-active")}
           [:a {:href "#/msg-queue"} "消息队列"]]]])
-     [:div
-      [:div.bkl-title.bkl-img2 "管理"]
-      [:ul.bk-ul
-       [:li {:class (when (= (session/get :page) :um) "bk-li-active")}
-        [:a {:href "#/um"} "用户管理"]]
-       [:li {:class (when (= (session/get :page) :feedback-manage) "bk-li-active")}
-        [:a {:href "#/feedback-manage"} "用户反馈"]]
-       [:li {:class (when (= (session/get :page) :mblog-manage) "bk-li-active")}
-        [:a {:href "#/mblog-manage"} "社区内容管理"]]
-       [:li {:class (when (= (session/get :page) :acts-manage) "bk-li-active")}
-        [:a {:href "#/acts-manage"} "社区活动管理"]]
-       [:li {:class (when (= (session/get :page) :banner-manage) "bk-li-active")}
-        [:a {:href "#/banner-manage"} "社区Banner管理"]]
-       [:li {:class (when (= (session/get :page) :report-manage) "bk-li-active")}
-        [:a {:href "#/report-manage"} "举报管理"]]]]]))
+     (when (or
+            (user-has-right? :usermanage)
+            (user-has-right? :feeback)
+            (user-has-right? :mblog))
+       [:div
+        [:div.bkl-title.bkl-img2 "管理"]
+        [:ul.bk-ul
+         (when (user-has-right? :usermanage)
+           [:li {:class (when (= (session/get :page) :um) "bk-li-active")}
+            [:a {:href "#/um"} "用户管理"]])
+         (when (user-has-right? :feedback)
+           [:li {:class (when (= (session/get :page) :feedback-manage) "bk-li-active")}
+            [:a {:href "#/feedback-manage"} "用户反馈"]])
+         (when (user-has-right? :mblog)
+           [:li {:class (when (= (session/get :page) :mblog-manage) "bk-li-active")}
+            [:a {:href "#/mblog-manage"} "社区内容管理"]])
+         (when (user-has-right? :mblog)
+           [:li {:class (when (= (session/get :page) :acts-manage) "bk-li-active")}
+            [:a {:href "#/acts-manage"} "社区活动管理"]])
+         (when (user-has-right? :mblog)
+           [:li {:class (when (= (session/get :page) :banner-manage) "bk-li-active")}
+            [:a {:href "#/banner-manage"} "社区Banner管理"]])
+         (when (user-has-right? :mblog)
+           [:li {:class (when (= (session/get :page) :report-manage) "bk-li-active")}
+            [:a {:href "#/report-manage"} "举报管理"]])]])]))
 
 
 (defn- get-me []
@@ -161,11 +171,10 @@
   [:div {:class "bk_wrap"} "\t" 
    [:a {:href "#"}
     [:img {:src "images/bk_logo-haier.png", :class "bk_logo"}]]
-   [:div {:class "bk_info_user"}
-    [:a {:href "#/admin"}
-     [:img {:src "images/personIcon.png", :class "personIcon"}]
-     [:span {:class "personName"} (:username @me "")]]
-    [:a {:href "/logout", :class "loginOut"} "退出"]]])
+   [:div.bk_info_user.header__right-links
+    (when (admin?)
+      [:a.header__admin-link {:href "#/admin"} [:span "控制台"]])
+    [:a {:href "/logout"} "退出"]]])
 
 (defn mount-components []
   (r/render [#'header] (.getElementById js/document "bk_header"))
