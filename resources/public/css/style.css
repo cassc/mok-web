@@ -945,45 +945,6 @@ body {
     text-transform: uppercase;
     text-decoration: none; }
 
-.container {
-  min-height: 80vh;
-  padding: 0 calc((100vw - 66.66667rem) / 2);
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column; }
-  @media only screen and (max-width: 75em) {
-    .container {
-      width: 66.66667rem; } }
-  @media only screen and (max-width: 56.25em) {
-    .container {
-      width: 95vw; } }
-  @media only screen and (max-width: 37.5em) {
-    .container {
-      width: 95vw; } }
-  .container--wallet {
-    margin-top: 4rem; }
-    @media only screen and (max-width: 37.5em) {
-      .container--wallet {
-        margin-top: 2rem;
-        overflow-x: hidden; } }
-
-.main {
-  display: flex;
-  flex-direction: column;
-  margin-left: 4rem;
-  width: 100%; }
-  @media only screen and (max-width: 37.5em) {
-    .main {
-      margin-left: 0;
-      min-width: 0;
-      margin-bottom: 2rem;
-      width: 95vw;
-      align-items: center;
-      justify-content: flex-start; } }
-  @media only screen and (max-width: 37.5em) {
-    .main__desktop {
-      display: none; } }
-
 .admin__container {
   padding: 2rem; }
 
@@ -1053,6 +1014,45 @@ body {
 
 .admin__item-save-btn {
   margin-right: 1rem; }
+
+.seller {
+  display: flex;
+  flex-direction: column; }
+  .seller h3 {
+    margin-top: 1rem; }
+  .seller__details > input {
+    font-family: inherit;
+    color: inherit;
+    padding: .5rem .35rem;
+    border-radius: 4px;
+    border: 1px solid #E8E8E8;
+    width: 20rem; }
+  .seller__label {
+    font-weight: bold;
+    margin-top: 1rem;
+    margin-bottom: .5rem; }
+  .seller__btn-group {
+    margin-top: 1rem; }
+    .seller__btn-group > a {
+      margin-right: 1rem; }
+
+.seller-list {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr; }
+  .seller-list > * {
+    margin-top: .5rem;
+    border-bottom: 1px solid #888888;
+    padding-bottom: .25rem; }
+  .seller-list__header {
+    font-weight: bold; }
+  .seller-list__edit-item {
+    font-weight: bold;
+    visibility: hidden;
+    opacity: 0;
+    transition: all .1s ease-out; }
+  .seller-list:hover a {
+    visibility: visible;
+    opacity: 1; }
 
 .um__head-opts {
   display: flex;

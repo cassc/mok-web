@@ -7,6 +7,7 @@
    [mok.pages.company :refer [get-companylist get-all-langs]]
    [mok.pages.broadcast :refer [broadcast messages msg-queue]]
    [mok.pages.um :refer [um]]
+   [mok.pages.shop :refer [shop-manage order-manage]]
    [mok.pages.admin :refer [admin-page]]
    [mok.pages.banner :refer [banner-manage]]
    [mok.pages.feedback-manage :refer [feedback-manage]]
@@ -61,7 +62,14 @@
             [:a {:href "#/banner-manage"} "社区Banner管理"]])
          (when (user-has-right? :mblog)
            [:li {:class (when (= (session/get :page) :report-manage) "bk-li-active")}
-            [:a {:href "#/report-manage"} "举报管理"]])]])]))
+            [:a {:href "#/report-manage"} "举报管理"]])]])
+     [:div
+      [:div.bkl-title.bkl-img2 "商城"]
+      [:ul.bk-ul
+       [:li {:class (when (= (session/get :page) :shop) "bk-li-active")}
+        [:a {:href "#/shop"} "卖家管理"]]
+       [:li {:class (when (= (session/get :page) :order) "bk-li-active")}
+        [:a {:href "#/order"} "订单管理"]]]]]))
 
 
 (defn- get-me []
@@ -106,6 +114,8 @@
    :messages #'messages
    :msg-queue #'msg-queue
    :um #'um
+   :shop #'shop-manage
+   :order #'order-manage
    :admin #'admin-page
    :feedback-manage #'feedback-manage
    :mblog-manage #'mblog-manage
@@ -137,6 +147,11 @@
 
 (secretary/defroute "/mblog-manage" []
   (session/put! :page :mblog-manage))
+
+(secretary/defroute "/shop" []
+  (session/put! :page :shop))
+(secretary/defroute "/order" []
+  (session/put! :page :order))
 
 (secretary/defroute "/um" []
   (session/put! :page :um))

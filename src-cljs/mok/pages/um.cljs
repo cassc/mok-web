@@ -131,36 +131,35 @@
            :keywords? true})))
 
 
-(defn- user-info-dialog
-  []
+(defn- user-info-dialog []
   (fn []
     (let [{:keys [roles phone haier status] :as u} @pop-user-info]
       [:div.alertViewBox {:style {:display :block :text-align :left}}
        [:div#user-info-dialog-0.alertViewBoxContent
         [:h4 (str (or haier phone) "的详情")]
         [:div.ct
-        [:table.user-info-dialog
-         [:thead
-          [:tr [:th "成员"] [:th "时间"]]]
-         [:tbody
-          (doall
-           (for [{:keys [nickname create_time]} roles]
-             ^{:key create_time}
-             [:tr [:td nickname] [:td create_time]]))]]
-        [:div
-         [:span "修改状态为"]
-         [:select
-          {:name "tag"
-           :value status
-           :on-change #(let [idx (.. % -target -selectedIndex)]
-                         (swap! pop-user-info assoc :status (-> (aget (.-target %) idx) .-value))
-                         (change-user-status))}
-          (doall
-           (for [i (range 3)]
-             ^{:key i}
-             [:option {:value i} (status-text i)]))]]
-        [:div.companyEditShdow-i18-buttons
-         [:input.alertViewBox-compilerDelete {:type :button :value "确认" :on-click #(toggle-user-info-dialog u)}]]]]])))
+         [:table.user-info-dialog
+          [:thead
+           [:tr [:th "成员"] [:th "时间"]]]
+          [:tbody
+           (doall
+            (for [{:keys [nickname create_time]} roles]
+              ^{:key create_time}
+              [:tr [:td nickname] [:td create_time]]))]]
+         [:div
+          [:span "修改状态为"]
+          [:select
+           {:name "tag"
+            :value status
+            :on-change #(let [idx (.. % -target -selectedIndex)]
+                          (swap! pop-user-info assoc :status (-> (aget (.-target %) idx) .-value))
+                          (change-user-status))}
+           (doall
+            (for [i (range 3)]
+              ^{:key i}
+              [:option {:value i} (status-text i)]))]]
+         [:div.companyEditShdow-i18-buttons
+          [:input.alertViewBox-compilerDelete {:type :button :value "确认" :on-click #(toggle-user-info-dialog u)}]]]]])))
 
 ;; com.jianqing.btcontrol/3.0.4 (Android;MHA-AL00;8.0.0)
 (defn parse-android-ua [ua]
