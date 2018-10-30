@@ -41,3 +41,43 @@
   }
   
 }
+
+.app-msg{
+  overflow-y: scroll;
+  max-height: 50vh;
+  
+  textarea{
+    width: 90%;
+    height: 20vh;
+    margin-left: 5%;
+  }
+
+  &__list{
+    width: 90%;
+    margin-left: 5%; 
+  }
+
+  &__list-item{
+    display: flex;
+    justify-content: space-between;
+    align-items:center;
+    margin-bottom: .5rem;
+    border-bottom: 1px solid $color-light-gray;
+  }
+
+  &__list-item-date{
+    width: 10rem;
+    font-size: .8rem;
+  }
+
+  &__list-item-delete{
+    margin-left: 1rem;
+    &,&:link,&:visited{
+      color: var(--color-primary);
+    }
+  }
+
+  &__list-item-msg{
+    width: 15rem; 
+  }
+}

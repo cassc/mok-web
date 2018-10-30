@@ -3,9 +3,9 @@
   (:refer-clojure :exclude [partial atom flush])
   (:require
    [mok.states :refer [companylist]]
-   [mok.utils :refer [make-toast date-formatter datetime-formatter loading-spinner default-error-handler
-                      status-text
-                      error-toast make-resp-handler get-window-width get-window-height cid->name admin? set-title! session-expired?]]
+   [mok.utils :as utils :refer [make-toast date-formatter datetime-formatter loading-spinner default-error-handler
+                                status-text
+                                error-toast make-resp-handler get-window-width get-window-height cid->name admin? set-title! session-expired?]]
    [mok.pages.company :refer [get-companylist]]
    [clojure.string :as s]
    [taoensso.timbre :as t]
@@ -24,6 +24,8 @@
 
 (defonce userlist (atom nil))
 (defonce pop-user-info (atom nil))
+(defonce msg-store (atom ""))
+(defonce pop-msg-info (atom nil)) ;; app msg
 (defonce userstats (atom nil))
 (defonce active-tab (atom :userlist))
 
@@ -111,6 +113,55 @@
   (swap! pop-user-info (fn [old] (when-not (= (:aid old) aid) user)))
   nil)
 
+
+(defn- send-app-msg-to [{:keys [aid]} msg]
+  {:pre [aid msg]}
+  (PUT "/broadcast/app/msg"
+       {:params {:aid aid :msg msg}
+        :handler (make-resp-handler
+                  {:callback-success
+                   (fn [{:keys [data]}]
+                     (swap! pop-msg-info update-in [:v-msg] (fn [xs] (cons data xs)))
+                     (reset! msg-store "")
+                     (make-toast "发送成功！"))})
+        :error-handler default-error-handler
+        :response-format :json
+        :format :json
+        :keywords? true}))
+
+(defn- load-app-msg-for [aid]
+  {:pre [aid]}
+  (GET "/broadcast/app/msg"
+       {:params {:aid aid}
+        :handler (make-resp-handler
+                  {:callback-success
+                   (fn [{:keys [data]}]
+                     (swap! pop-msg-info assoc :v-msg data))})
+        :error-handler default-error-handler
+        :response-format :json
+        :format :json
+        :keywords? true}))
+
+(defn- delete-app-msg [{:keys [id aid]}]
+  {:pre [id]}
+  (DELETE "/broadcast/app/msg"
+       {:params {:id id}
+        :handler (make-resp-handler
+                  {:callback-success
+                   (fn [{:keys [data]}]
+                     (load-app-msg-for aid)
+                     (make-toast "删除成功！"))})
+        :error-handler default-error-handler
+        :response-format :json
+        :format :json
+        :keywords? true}))
+
+(defn toggle-app-msg-dialog [{:keys [aid haier] :as user}]
+  (swap! pop-msg-info (fn [old] (when-not (= (:aid old) aid)
+                                  (load-app-msg-for aid)
+                                  user)))
+  nil)
+
 (defn- update-user-status-in-userlist [{:keys [aid status]}]
   (swap! userlist (fn [xs] (mapv (fn [u] (if (= (:aid u) aid) (assoc u :status status) u)) xs))))
 
@@ -129,7 +180,6 @@
            :response-format :json
            :format :json
            :keywords? true})))
-
 
 (defn- user-info-dialog []
   (fn []
@@ -160,6 +210,27 @@
               [:option {:value i} (status-text i)]))]]
          [:div.companyEditShdow-i18-buttons
           [:input.alertViewBox-compilerDelete {:type :button :value "确认" :on-click #(toggle-user-info-dialog u)}]]]]])))
+
+(defn- msg-info-dialog []
+  (fn []
+    (let [{:keys [aid haier] :as u} @pop-msg-info]
+      [:div.alertViewBox {:style {:display :block :text-align :left}}
+       [:div#user-info-dialog-0.alertViewBoxContent.app-msg
+        [:h4 (str "应用消息，目标用户：" haier)]
+        [:div.app-msg__list
+         (doall
+          (for [{:keys [msg ts id]} (:v-msg @pop-msg-info)]
+            [:div.app-msg__list-item {:key (str "m." id)}
+             [:div.app-msg__list-item-date (utils/ts->readable-time ts)]
+             [:div.app-msg__list-item-msg msg]
+             [:a.app-msg__list-item-delete {:href "javascript:;" :on-click #(delete-app-msg {:id id :aid aid})} "删除"]]))]
+        [:div "发送新消息"]
+        [:textarea {:value @msg-store
+                    :on-change #(reset! msg-store (-> % .-target .-value))}]
+        [:div.ct
+         [:div.companyEditShdow-i18-buttons
+          [:a.btn-light {:href "javascript:;" :on-click #(send-app-msg-to u @msg-store)} "确认"]
+          [:a.btn-light {:href "javascript:;" :on-click #(toggle-app-msg-dialog u)} "取消"]]]]])))
 
 ;; com.jianqing.btcontrol/3.0.4 (Android;MHA-AL00;8.0.0)
 (defn parse-android-ua [ua]
@@ -232,9 +303,13 @@
              [:td app-version]
              [:td scale]
              [:td (status-text status)]
-             [:td [:a {:href "javascript:;" :on-click #(toggle-user-info-dialog u)} "查看"]]]))]]
+             [:td
+              [:p [:a {:href "javascript:;" :on-click #(toggle-user-info-dialog u)} "查看"]]
+              [:p [:a {:href "javascript:;" :on-click #(toggle-app-msg-dialog u)} "消息"]]]]))]]
        (when @pop-user-info
-         [user-info-dialog])])
+         [user-info-dialog])
+       (when @pop-msg-info
+         [msg-info-dialog])])
     {:component-will-mount #(.addEventListener js/window "scroll" load-more)
      :component-will-unmount #(.removeEventListener js/window "scroll" load-more)}))
 

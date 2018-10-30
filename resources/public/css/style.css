@@ -1089,3 +1089,29 @@ body {
   display: flex; }
   .um__btn-group > a {
     margin-right: 2rem; }
+
+.app-msg {
+  overflow-y: scroll;
+  max-height: 50vh; }
+  .app-msg textarea {
+    width: 90%;
+    height: 20vh;
+    margin-left: 5%; }
+  .app-msg__list {
+    width: 90%;
+    margin-left: 5%; }
+  .app-msg__list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .5rem;
+    border-bottom: 1px solid #E8E8E8; }
+  .app-msg__list-item-date {
+    width: 10rem;
+    font-size: .8rem; }
+  .app-msg__list-item-delete {
+    margin-left: 1rem; }
+    .app-msg__list-item-delete, .app-msg__list-item-delete:link, .app-msg__list-item-delete:visited {
+      color: var(--color-primary); }
+  .app-msg__list-item-msg {
+    width: 15rem; }
