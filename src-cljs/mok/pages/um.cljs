@@ -219,18 +219,20 @@
         [:h4 (str "应用消息，目标用户：" haier)]
         [:div.app-msg__list
          (doall
-          (for [{:keys [msg ts id]} (:v-msg @pop-msg-info)]
+          (for [{:keys [msg ts id status]} (:v-msg @pop-msg-info)]
             [:div.app-msg__list-item {:key (str "m." id)}
              [:div.app-msg__list-item-date (utils/ts->readable-time ts)]
+             [:div.app-msg__list-item-status status]
              [:div.app-msg__list-item-msg msg]
              [:a.app-msg__list-item-delete {:href "javascript:;" :on-click #(delete-app-msg {:id id :aid aid})} "删除"]]))]
-        [:div "发送新消息"]
+        [:div.app-msg__send-msg-head
+         [:div "发送新消息"]
+         [:a.btn-light {:href "javascript:;" :on-click #(when-not (s/blank? @msg-store)
+                                                          (send-app-msg-to u @msg-store))} "发送"]]
         [:textarea {:value @msg-store
                     :on-change #(reset! msg-store (-> % .-target .-value))}]
-        [:div.ct
-         [:div.companyEditShdow-i18-buttons
-          [:a.btn-light {:href "javascript:;" :on-click #(send-app-msg-to u @msg-store)} "确认"]
-          [:a.btn-light {:href "javascript:;" :on-click #(toggle-app-msg-dialog u)} "取消"]]]]])))
+        [:div.app-msg__btn-group 
+         [:a.btn-light {:href "javascript:;" :on-click #(toggle-app-msg-dialog u)} "关闭"]]]])))
 
 ;; com.jianqing.btcontrol/3.0.4 (Android;MHA-AL00;8.0.0)
 (defn parse-android-ua [ua]
