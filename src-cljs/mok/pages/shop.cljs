@@ -43,7 +43,7 @@
 (defn valid-seller? [_]
   true)
 
-(defn add-seller [{:keys [phone fullname] :as params}]
+(defn add-seller [{:keys [title owner phone description license] :as params}]
   (PUT "/seller"
        {:params params
         :format :json
@@ -89,10 +89,14 @@
   [:div.seller
    [:h3 "添加卖家"]
    [:div.seller__details
-    [:div.seller__label "卖家名称"]
-    [:input {:type :text :value (:fullname @seller-state "") :on-click #(swap! seller-state assoc :fullname (-> % .-target .-value))}]
+    [:div.seller__label "店名"]
+    [:input {:type :text :value (:title @seller-state "") :on-change #(swap! seller-state assoc :title (-> % .-target .-value))}]
+    [:div.seller__label "店主姓名"]
+    [:input {:type :text :value (:owner @seller-state "") :on-change #(swap! seller-state assoc :owner (-> % .-target .-value))}] 
     [:div.seller__label "电话号码"]
-    [:input {:type :text :value (:phone @seller-state "") :on-click #(swap! seller-state assoc :phone (-> % .-target .-value))}]
+    [:input {:type :text :value (:phone @seller-state "") :on-change #(swap! seller-state assoc :phone (-> % .-target .-value))}]
+    [:div.seller__label "店铺介绍"]
+    [:textarea {:value (:description @seller-state "") :on-change #(swap! seller-state assoc :description (-> % .-target .-value))}]
     [:div.seller__btn-group
      [:a.btn-light {:href "javascript:;" :on-click #(when (valid-seller? @seller-state)
                                                       (add-seller @seller-state))} "添加"]
@@ -102,21 +106,22 @@
 
 (defn seller-list-panel []
   [:div.seller
-   [:h3 "卖家列表"]
+   [:h3 "店铺列表"]
    [:div.seller-list
-    [:div.seller-list__header "卖家名称"] [:div.seller-list__header "电话号码"] [:div.seller-list__header ]]
-   [:div.seller-list
-    [:div "海尔"]
-    [:div "10011112222"]
-    [:div
-     [:a.seller-list__edit-item
-      {:href "javascript:;"
-       :on-click #(do
-                    (reset! seller-state {}) ;; TODO 
-                    (swap! app-state assoc :panel :edit))} "编辑"]]]])
+    [:div.seller-list__header "店名"] [:div.seller-list__header "电话号码"]]
+   (doall
+    (for [{:keys [id title description phone owner]} @seller-list-store]
+      [:div.seller-list
+       {:key (str "shop." id)
+        :on-click #(do
+                     (reset! seller-state {}) ;; TODO 
+                     (swap! app-state assoc :panel :edit))}
+       [:div title]
+       [:div phone]]))])
 
 (defn shop-manage []
   (set-title! "卖家管理")
+  (load-sellers!)
   (fn []
     [:div.id.bkcr-content
      [:p.bkcrc-title
@@ -131,7 +136,7 @@
        [seller-list-panel])]))
 
 (defn order-manage []
-  (set-title! "订单管理")
+  (set-title! "订单管理") 
   (fn []
     [:div.id.bkcr-content
      [:p.bkcrc-title
