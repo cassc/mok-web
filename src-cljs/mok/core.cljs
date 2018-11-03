@@ -8,6 +8,7 @@
    [mok.pages.broadcast :refer [broadcast messages msg-queue]]
    [mok.pages.um :refer [um]]
    [mok.pages.shop :refer [shop-manage order-manage]]
+   [mok.pages.prod :refer [prod-manage]]
    [mok.pages.admin :refer [admin-page]]
    [mok.pages.banner :refer [banner-manage]]
    [mok.pages.feedback-manage :refer [feedback-manage]]
@@ -68,6 +69,8 @@
       [:ul.bk-ul
        [:li {:class (when (= (session/get :page) :shop) "bk-li-active")}
         [:a {:href "#/shop"} "卖家管理"]]
+       [:li {:class (when (= (session/get :page) :prod) "bk-li-active")}
+        [:a {:href "#/prod"} "商品管理"]]
        [:li {:class (when (= (session/get :page) :order) "bk-li-active")}
         [:a {:href "#/order"} "订单管理"]]]]]))
 
@@ -115,6 +118,7 @@
    :msg-queue #'msg-queue
    :um #'um
    :shop #'shop-manage
+   :prod #'prod-manage
    :order #'order-manage
    :admin #'admin-page
    :feedback-manage #'feedback-manage
@@ -148,6 +152,8 @@
 (secretary/defroute "/mblog-manage" []
   (session/put! :page :mblog-manage))
 
+(secretary/defroute "/prod" []
+  (session/put! :page :prod))
 (secretary/defroute "/shop" []
   (session/put! :page :shop))
 (secretary/defroute "/order" []

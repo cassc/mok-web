@@ -15,3 +15,6 @@
 
 (defn appid->title [appid]
   (some #(when (= appid (:appid %)) (:title %)) @applications-store))
+
+
+(defonce seller-list-store (atom []))

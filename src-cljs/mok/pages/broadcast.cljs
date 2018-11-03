@@ -6,7 +6,7 @@
    [mok.states :refer [companylist me companyid->name appid->title]]
    [mok.utils :as utils :refer [make-toast pikaday-construct date-formatter
                                 datetime-formatter loading-spinner make-spectrum-conf
-                                format-date user-has-right?
+                                format-date user-has-right? upload-file
                                 default-error-handler admin? set-title! make-resp-handler]]
    [clojure.string :as s]
    [taoensso.timbre :as t]
@@ -263,23 +263,6 @@
        (when id
          [msg-part-editor-popup id toggle])])))
 
-(defn- upload-broadcast-resource
-  "Upload an image.  
-
-  Returns the path of the generated image. Upon success, the value for
-  `storage-key` in `storage` will be updated to the returned value."
-  [{:keys [image callback-success]}]
-  (PUT (str "/broadcast/image/" (.getTime (js/Date.)))
-       {:body (doto (js/FormData.)
-                (.append "imageElement" image))
-        :response-format :json
-        :keywords? true
-        :timeout 60000
-        :handler (make-resp-handler
-                  {:msg-success "保存成功！" :msg-fail "请求失败！"
-                   :callback-success callback-success})
-        :error-handler default-error-handler}))
-
 (defn ppicture [node]
   (let [toggle (atom nil)
         {:keys [id src]} node
@@ -296,7 +279,7 @@
           {:type "file"
            :on-change (fn [e]
                         (let [file (first (array-seq (.. e -target -files)))]
-                          (upload-broadcast-resource
+                          (upload-file
                            {:image file
                             :callback-success
                             #(when-let [nsrc (:data %)]
@@ -390,7 +373,7 @@
               {:type "file"
                :on-change (fn [e]
                             (let [file (first (array-seq (.. e -target -files)))]
-                              (upload-broadcast-resource
+                              (upload-file
                                {:image file
                                 :callback-success #(when-let [nsrc (:data %)]
                                                      (swap! bd-state assoc :coverImage nsrc))})))}]

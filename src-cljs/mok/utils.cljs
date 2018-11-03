@@ -1,6 +1,8 @@
 (ns mok.utils
   (:refer-clojure :exclude [partial atom flush])
   (:require
+   [mok.states :refer [me companylist seller-list-store]]
+   
    [clojure.string :as s]
    [ajax.core :refer [GET PUT DELETE]]
    [taoensso.timbre :as t]
@@ -14,7 +16,7 @@
    [cljs-time.format :refer [unparse formatter parse show-formatters]]
    [cljs-time.coerce :refer [from-long]]
    [cljs-time.core :refer [date-time now time-zone-for-offset to-default-time-zone]]
-   [mok.states :refer [me companylist]])
+   )
   (:import [goog History]))
 
 
@@ -287,3 +289,33 @@
 (defn open! [loc]
   (.open js/window loc))
 
+
+(defn load-sellers! []
+  (GET "/seller"
+       {:response-format :json
+        :keywords? true
+        :timeout 60000
+        :handler (make-resp-handler
+                  {:msg-fail "请求失败！"
+                   :callback-success #(reset! seller-list-store (:data %))})
+        :error-handler default-error-handler}))
+
+(defn upload-file
+  "Upload static file shared by broadcasts and product images"
+  [{:keys [image callback-success]}]
+  (PUT (str "/broadcast/image/" (.getTime (js/Date.)))
+       {:body (doto (js/FormData.)
+                (.append "imageElement" image))
+        :response-format :json
+        :keywords? true
+        :timeout 60000
+        :handler (make-resp-handler
+                  {:msg-success "保存成功！" :msg-fail "请求失败！"
+                   :callback-success callback-success})
+        :error-handler default-error-handler}))
+
+(defn maybe-upload-file [file cb-success]
+  (cond
+    (not (pos? (.-size file))) (make-toast :error "不能上传0字节大小文件。")
+    (> (.-size file) (* 4 1024 1024)) (make-toast :error "文件大小不能超过4MB。")
+    :else (upload-file {:image file :callback-success cb-success})))
