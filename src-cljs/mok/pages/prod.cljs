@@ -28,9 +28,13 @@
 
 (defonce app-state (atom {}))
 
+(def default-product {:score 0 :price-yuan 0 :sid 1 :status "show" :loc -1})
+
 (defonce product-state (atom {}))
 
 (defonce product-list-store (atom []))
+
+(defonce top-products-store (atom []))
 
 (defn switch-to-panel [panel]
   (swap! app-state assoc :panel panel))
@@ -42,6 +46,16 @@
   (-> vc
       (remove-from-vec el)
       (conj el)))
+
+(defn load-top-prods! []
+  (GET "/shop/top-product"
+       {:response-format :json
+        :keywords? true
+        :timeout 60000
+        :handler (make-resp-handler
+                  {:msg-fail "请求失败！"
+                   :callback-success #(reset! top-products-store (:data %))})
+        :error-handler default-error-handler}))
 
 (defn load-prods! []
   (GET "/shop/product"
@@ -68,7 +82,7 @@
                    :callback-success #(do
                                         (load-prods!)
                                         (switch-to-panel :home)
-                                        (reset! product-state {}))})
+                                        (reset! product-state default-product))})
         :error-handler default-error-handler}))
 
 (defn upsert-prod-btn-group [edit?]
@@ -79,7 +93,7 @@
     (if edit? "保存" "添加")]
    [:a.btn-light {:href "javascript:;" :on-click #(do
                                                     (swap! app-state dissoc :panel)
-                                                    (reset! product-state {}))} "取消"]])
+                                                    (reset! product-state default-product))} "取消"]])
 
 (defn product-panel []
   (let [tmp-tag (atom "")]
@@ -168,6 +182,16 @@
           [:a.btn-light
            {:href "javascript:;" :on-click #(swap! product-state update :status (fn [st] (if (= status "hide") "show" "hide")))}
            (if (= status "hide") "点击上架" "点击下架")]
+          [:div.prod__label "置顶位置"]
+          [:div.prod__top-list
+           (doall
+            (for [i (range 1 11)]
+              [:div.prod__top-item {:key (str "ti." i)
+                                    :class (cond
+                                             (= (:loc @product-state) i) "prod__top-item--active"
+                                             ((set (map :loc @top-products-store)) i) "prod__top-item--taken")
+                                    :on-click #(swap! product-state update :loc (fn [loc] (if (= loc i) -1 i)))}
+               (str i)]))]
           
           [upsert-prod-btn-group edit?]]]))))
 
@@ -191,6 +215,7 @@
   (set-title! "商品管理")
   (load-sellers!)
   (load-prods!)
+  (load-top-prods!)
   (fn []
     [:div.id.bkcr-content
      [:p.bkcrc-title

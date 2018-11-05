@@ -1150,6 +1150,22 @@ body {
       width: 100%; }
     .prod__item:hover {
       border: 1px solid #009F6B; }
+  .prod__top-list {
+    display: flex;
+    justify-content: space-between; }
+  .prod__top-item {
+    width: 4rem;
+    height: 2rem;
+    background-color: #E8E8E8;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer; }
+    .prod__top-item--active {
+      background-color: #009F6B; }
+    .prod__top-item--taken {
+      background-color: #888888; }
 
 .order {
   display: flex;

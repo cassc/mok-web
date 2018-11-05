@@ -171,6 +171,29 @@
       border: 1px solid $color-tertiary-light;
     }
   }
+
+  &__top-list{
+    display: flex;
+    justify-content: space-between; 
+  }
+
+  &__top-item{
+    width: 4rem;
+    height: 2rem;
+    background-color: $color-light-gray;
+    border-radius: 4px;
+    display: flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    &--active{
+      background-color: $color-tertiary-light;
+    }
+
+    &--taken{
+      background-color: $color-light-gray-3;
+    }
+  }
 }
 
 .order{
