@@ -7,8 +7,9 @@
    [mok.pages.company :refer [get-companylist get-all-langs]]
    [mok.pages.broadcast :refer [broadcast messages msg-queue]]
    [mok.pages.um :refer [um]]
-   [mok.pages.shop :refer [shop-manage order-manage]]
+   [mok.pages.seller :refer [seller-manage]]
    [mok.pages.prod :refer [prod-manage]]
+   [mok.pages.order :refer [order-manage]]
    [mok.pages.admin :refer [admin-page]]
    [mok.pages.banner :refer [banner-manage]]
    [mok.pages.feedback-manage :refer [feedback-manage]]
@@ -68,11 +69,11 @@
       [:div.bkl-title.bkl-img2 "商城"]
       [:ul.bk-ul
        [:li {:class (when (= (session/get :page) :shop) "bk-li-active")}
-        [:a {:href "#/shop"} "卖家管理"]]
+        [:a {:href "#/seller"} "卖家管理"]]
        [:li {:class (when (= (session/get :page) :prod) "bk-li-active")}
         [:a {:href "#/prod"} "商品管理"]]
        [:li {:class (when (= (session/get :page) :order) "bk-li-active")}
-        [:a {:href "#/order"} "订单管理"]]]]]))
+        [:a {:href "#/order"} "订单发货"]]]]]))
 
 
 (defn- get-me []
@@ -117,7 +118,7 @@
    :messages #'messages
    :msg-queue #'msg-queue
    :um #'um
-   :shop #'shop-manage
+   :seller #'seller-manage
    :prod #'prod-manage
    :order #'order-manage
    :admin #'admin-page
@@ -154,8 +155,8 @@
 
 (secretary/defroute "/prod" []
   (session/put! :page :prod))
-(secretary/defroute "/shop" []
-  (session/put! :page :shop))
+(secretary/defroute "/seller" []
+  (session/put! :page :seller))
 (secretary/defroute "/order" []
   (session/put! :page :order))
 

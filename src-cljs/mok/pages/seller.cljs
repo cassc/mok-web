@@ -1,4 +1,4 @@
-(ns ^:figwheel-always mok.pages.shop
+(ns ^:figwheel-always mok.pages.seller
   (:refer-clojure :exclude [partial atom flush])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]])
   (:require
@@ -124,7 +124,7 @@
        [:div title]
        [:div phone]]))])
 
-(defn shop-manage []
+(defn seller-manage []
   (set-title! "卖家管理")
   (load-sellers!)
   (fn []
@@ -139,15 +139,4 @@
        :add [seller-panel]
        :edit [seller-panel]
        [seller-list-panel])]))
-
-(defn order-manage []
-  (set-title! "订单管理") 
-  (fn []
-    [:div.id.bkcr-content
-     [:p.bkcrc-title
-      [:span "商城"]
-      "  >  "
-      [:span.bkcrc-seceondT "订单管理"]]
-     [:button.buttons.mt10 {:on-click #(reset! app-state {})} "添加"]
-     ]))
 

@@ -1,5 +1,8 @@
 .PHONY: clean sass build
-build:
+sass:
+	npm run build:css
+build: sass
 	lein build
-deploy: build 
-	csync-projects.sh mok-web nh "/home/haier/"
+sync-files:
+	rsync -av --delete resources/public/ nh:/home/haier/projects/mok-web/resources/public/
+deploy: build sync-files
