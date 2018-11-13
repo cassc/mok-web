@@ -46,10 +46,18 @@
   overflow-y: scroll;
   max-height: 50vh;
   
-  textarea{
-    width: 90%;
-    height: 20vh;
+  & > textarea, & > input{
+    width: 90%; 
     margin-left: 5%;
+  }
+
+  & > input{
+    margin-bottom: 1rem;
+    height: 2rem;
+  }
+  
+  & > textarea{
+    height: 20vh;
   }
 
   &__list{
@@ -83,7 +91,9 @@
 
   &__list-item-msg{
     width: 15rem;
-    font-weight:bold;
+    &--title{
+      font-weight:bold;
+    }
   }
 
   &__btn-group{

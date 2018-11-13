@@ -24,7 +24,7 @@
 
 (defonce userlist (atom nil))
 (defonce pop-user-info (atom nil))
-(defonce msg-store (atom ""))
+(defonce msg-store (atom {}))
 (defonce pop-msg-info (atom nil)) ;; app msg
 (defonce userstats (atom nil))
 (defonce active-tab (atom :userlist))
@@ -117,12 +117,12 @@
 (defn- send-app-msg-to [{:keys [aid]} msg]
   {:pre [aid msg]}
   (PUT "/broadcast/app/msg"
-       {:params {:aid aid :msg msg}
+       {:params (assoc msg :aid aid)
         :handler (make-resp-handler
                   {:callback-success
                    (fn [{:keys [data]}]
                      (swap! pop-msg-info update-in [:v-msg] (fn [xs] (cons data xs)))
-                     (reset! msg-store "")
+                     (reset! msg-store {})
                      (make-toast "发送成功！"))})
         :error-handler default-error-handler
         :response-format :json
@@ -219,18 +219,22 @@
         [:h4 (str "应用消息，目标用户：" haier)]
         [:div.app-msg__list
          (doall
-          (for [{:keys [msg ts id status]} (:v-msg @pop-msg-info)]
+          (for [{:keys [msg ts id status title]} (:v-msg @pop-msg-info)]
             [:div.app-msg__list-item {:key (str "m." id)}
              [:div.app-msg__list-item-date (utils/ts->readable-time ts)]
              [:div.app-msg__list-item-status status]
-             [:div.app-msg__list-item-msg msg]
+             [:div.app-msg__list-item-msg
+              [:div.app-msg__list-item-msg--title (or title "")]
+              [:div msg]]
              [:a.app-msg__list-item-delete {:href "javascript:;" :on-click #(delete-app-msg {:id id :aid aid})} "删除"]]))]
         [:div.app-msg__send-msg-head
          [:div "发送新消息"]
          [:a.btn-light {:href "javascript:;" :on-click #(when-not (s/blank? @msg-store)
                                                           (send-app-msg-to u @msg-store))} "发送"]]
-        [:textarea {:value @msg-store
-                    :on-change #(reset! msg-store (-> % .-target .-value))}]
+        [:input {:type :text :value (or (:title @msg-store) "")
+                 :on-change #(swap! msg-store assoc :title (-> % .-target .-value))}]
+        [:textarea {:value (or (:msg @msg-store) )
+                    :on-change #(swap! msg-store assoc :msg (-> % .-target .-value))}]
         [:div.app-msg__btn-group 
          [:a.btn-light {:href "javascript:;" :on-click #(toggle-app-msg-dialog u)} "关闭"]]]])))
 
