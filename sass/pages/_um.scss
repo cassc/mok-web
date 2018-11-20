@@ -49,8 +49,17 @@
 
 .app-msg{
   overflow-y: scroll;
-  max-height: 50vh;
- 
+
+  &--dialog{
+    padding: 1rem;
+    width: 80vw;
+    background: #fff;
+    position: absolute;
+    left: 10vw;
+    top: 10vh;
+    height: 80vh;
+  }
+  
   & > textarea, & > input{
     width: 90%; 
     margin-left: 5%;

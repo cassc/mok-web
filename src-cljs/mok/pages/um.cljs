@@ -235,7 +235,7 @@
   (fn []
     (let [{:keys [aid haier] :as u} @pop-msg-info]
       [:div.alertViewBox {:style {:display :block :text-align :left}}
-       [:div#user-info-dialog-0.alertViewBoxContent.app-msg
+       [:div.app-msg.app-msg--dialog
         [:h4 (str "应用消息，目标用户：" haier)]
         [:div.app-msg__list
          (doall
@@ -248,14 +248,14 @@
               [:div msg]]
              [:a.app-msg__list-item-delete {:href "javascript:;" :on-click #(delete-app-msg {:id id :aid aid})} "删除"]]))]
         [:div.app-msg__send-msg-head
-         [:div "发送新消息"]
-         [:a.btn-light {:href "javascript:;" :on-click #(when-not (s/blank? @msg-store)
-                                                          (send-app-msg-to u @msg-store))} "发送"]]
+         [:div "发送新消息"]]
         [:input {:type :text :value (or (:title @msg-store) "")
                  :on-change #(swap! msg-store assoc :title (-> % .-target .-value))}]
         [:textarea {:value (or (:msg @msg-store) )
                     :on-change #(swap! msg-store assoc :msg (-> % .-target .-value))}]
-        [:div.app-msg__btn-group 
+        [:div.app-msg__btn-group
+         [:a.btn-light {:href "javascript:;" :on-click #(when-not (s/blank? @msg-store)
+                                                          (send-app-msg-to u @msg-store))} "发送"]
          [:a.btn-light {:href "javascript:;" :on-click #(toggle-app-msg-dialog u)} "关闭"]]]])))
 
 ;; com.jianqing.btcontrol/3.0.4 (Android;MHA-AL00;8.0.0)
