@@ -113,21 +113,41 @@
   (swap! pop-user-info (fn [old] (when-not (= (:aid old) aid) user)))
   nil)
 
+(defn valid-msg? [{:keys [title msg]}]
+  (not (or (s/blank? title)
+           (s/blank? msg))))
 
 (defn- send-app-msg-to [{:keys [aid]} msg]
   {:pre [aid msg]}
-  (PUT "/broadcast/app/msg"
-       {:params (assoc msg :aid aid)
-        :handler (make-resp-handler
-                  {:callback-success
-                   (fn [{:keys [data]}]
-                     (swap! pop-msg-info update-in [:v-msg] (fn [xs] (cons data xs)))
-                     (reset! msg-store {})
-                     (make-toast "发送成功！"))})
-        :error-handler default-error-handler
-        :response-format :json
-        :format :json
-        :keywords? true}))
+  (if (valid-msg? msg)
+    (PUT "/broadcast/app/msg"
+         {:params (assoc msg :aid aid)
+          :handler (make-resp-handler
+                    {:callback-success
+                     (fn [{:keys [data]}]
+                       (swap! pop-msg-info update-in [:v-msg] (fn [xs] (cons data xs)))
+                       (reset! msg-store {})
+                       (make-toast "发送成功！"))})
+          :error-handler default-error-handler
+          :response-format :json
+          :format :json
+          :keywords? true})
+    (js/alert "标题及内容不能为空！")))
+
+(defn- broadcast-app-msg [msg]
+  (if (valid-msg? msg)
+    (PUT "/broadcast/app/msg"
+         {:params (assoc msg :aid 0)
+          :handler (make-resp-handler
+                    {:callback-success
+                     (fn [{:keys [data]}]
+                       (reset! msg-store {})
+                       (make-toast "发送成功！"))})
+          :error-handler default-error-handler
+          :response-format :json
+          :format :json
+          :keywords? true})
+    (js/alert "标题及内容不能为空！")))
 
 (defn- load-app-msg-for [aid]
   {:pre [aid]}
@@ -145,7 +165,7 @@
 (defn- delete-app-msg [{:keys [id aid]}]
   {:pre [id]}
   (DELETE "/broadcast/app/msg"
-       {:params {:id id}
+       {:params {:mid id :aid aid}
         :handler (make-resp-handler
                   {:callback-success
                    (fn [{:keys [data]}]
@@ -353,6 +373,23 @@
       [:a.btn-light {:href "javascript:;" :on-click #(add-user @user-store)} "创建"])
     [:a.btn-light {:href "javascript:;" :on-click #(show-tab :userlist)} "取消"]]])
 
+(defn m-broadcast-panel []
+  [:div {:class (if (= :m-broadcast @active-tab) "show" "hide")}
+   [:div.mab
+    [:label.um__label "消息广播"]
+    [:div
+     [:h4 "发送给所有用户"]
+     [:div.mab__send
+      [:div.mab__send-body
+       [:input {:type :text :value (or (:title @msg-store) "")
+                :on-change #(swap! msg-store assoc :title (-> % .-target .-value))}]
+       [:textarea {:value (or (:msg @msg-store) )
+                   :on-change #(swap! msg-store assoc :msg (-> % .-target .-value))}]
+       [:div.mab__btn-group 
+        [:a.btn-light {:href "javascript:;" :on-click #(when-not (s/blank? @msg-store)
+                                                         (broadcast-app-msg @msg-store))} "发送"]
+        [:a.btn-light {:href "javascript:;" :on-click #(show-tab :userlist)} "取消"]]]]]]])
+
 
 (defn- make-age-stats-string [age-dist]
   (reduce (fn [ss {:keys [age cnt percent]}]
@@ -406,7 +443,11 @@
                                                   (swap! search-params assoc :query "" :page 1)
                                                   (get-userlist true))
                                :else nil))}]
-      [:a.btn-light.um__add-user {:href "javascript:;" :on-click #(show-tab :user-add)} "添加用户"]]
+      [:div]
+      [:a.btn-light.um__head-opts--left {:href "javascript:;" :on-click #(show-tab :user-add)} "添加用户"]
+      [:a.btn-light.um__head-opts--right {:href "javascript:;" :on-click #(show-tab :m-broadcast)} "广播消息"]
+      ]
      [userlist-table]
      [user-add-field]
+     [m-broadcast-panel]
      [loading-spinner (:searching @search-state)]]))

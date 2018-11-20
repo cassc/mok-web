@@ -1,17 +1,22 @@
 .um{
   &__head-opts{
-    display:flex;
-    justify-content: space-between;
-    align-items:center;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    grid-row-gap: 1rem;
+    align-items:center; 
 
     & > input{
       border:none;
       border-bottom: 1px solid $color-black;
     }
-  }
-  &__add-user{
-    margin-left:auto;
-    font-size: .8rem;
+
+    &--left{
+      margin-right: auto;
+    }
+
+    &--right{
+      margin-left: auto;
+    }
   }
 
   &__row{
@@ -45,7 +50,7 @@
 .app-msg{
   overflow-y: scroll;
   max-height: 50vh;
-  
+ 
   & > textarea, & > input{
     width: 90%; 
     margin-left: 5%;
@@ -107,5 +112,39 @@
     justify-content: space-between;
     align-items:center;
     padding: .5rem;
+  }
+}
+
+.mab{
+  display:flex;
+  flex-direction:column;
+
+  &__msg-list{
+    
+  }
+
+  &__send{
+    
+  }
+
+  &__btn-group {
+    display:flex;
+    justify-content: space-around;
+  }
+  
+  &__send-body{
+    display:grid;
+    grid-template-columns:1;
+    grid-row-gap: 1rem;
+    margin-bottom: 1rem;
+
+    & input, & textarea{
+      @include cInput;
+    }
+
+    & textarea{
+      height: 6rem;
+    }
+    
   }
 }
