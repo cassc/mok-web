@@ -134,9 +134,10 @@
           :keywords? true})
     (js/alert "标题及内容不能为空！")))
 
-(defn- broadcast-app-msg [msg]
+(defn- broadcast-app-msg [{:keys [jpush?] :as msg}]
   (if (valid-msg? msg)
     (PUT "/broadcast/app/msg"
+
          {:params (assoc msg :aid 0)
           :handler (make-resp-handler
                     {:callback-success
@@ -385,6 +386,9 @@
                 :on-change #(swap! msg-store assoc :title (-> % .-target .-value))}]
        [:textarea {:value (or (:msg @msg-store) )
                    :on-change #(swap! msg-store assoc :msg (-> % .-target .-value))}]
+       [:div.mab__jpush-notify
+        [:div.mab__jpush-notify-label "同时使用JPUSH推送？"]
+        [:input {:type :checkbox :on-change #(swap! msg-store update :jpush? not)}]]
        [:div.mab__btn-group 
         [:a.btn-light {:href "javascript:;" :on-click #(when-not (s/blank? @msg-store)
                                                          (broadcast-app-msg @msg-store))} "发送"]
@@ -426,27 +430,37 @@
     (get-userstats))
   (fn []
     [:div.id.bkcr-content
-     [userstats-widget]
+     ;;[userstats-widget]
      [:p.bkcrc-title
       [:span "管理"]
       "  >  "
       [:span.bkcrc-seceondT "用户管理"]]
-     [:div.um__head-opts {:class (if (= :userlist @active-tab) "show" "hide")}
-      [:input {:type :text :placeholder "按手机号或aid过滤" :value (:query @search-params)
-               :on-change #(let [phone (-> % .-target .-value s/trim)]
-                             (swap! search-params assoc :query phone)
-                             (cond
-                               (> (count phone) 2) (do
-                                                     (swap! search-params assoc :page 1)
-                                                     (get-userlist true))
-                               (s/blank? phone) (do
-                                                  (swap! search-params assoc :query "" :page 1)
-                                                  (get-userlist true))
-                               :else nil))}]
-      [:div]
-      [:a.btn-light.um__head-opts--left {:href "javascript:;" :on-click #(show-tab :user-add)} "添加用户"]
-      [:a.btn-light.um__head-opts--right {:href "javascript:;" :on-click #(show-tab :m-broadcast)} "广播消息"]
-      ]
+     (let [stat (first @userstats)]
+       [:div.um__head-opts {:class (if (= :userlist @active-tab) "show" "hide")}
+        
+        [:input {:type :text :placeholder "按手机号或aid过滤" :value (:query @search-params)
+                 :on-change #(let [phone (-> % .-target .-value s/trim)]
+                               (swap! search-params assoc :query phone)
+                               (cond
+                                 (> (count phone) 2) (do
+                                                       (swap! search-params assoc :page 1)
+                                                       (get-userlist true))
+                                 (s/blank? phone) (do
+                                                    (swap! search-params assoc :query "" :page 1)
+                                                    (get-userlist true))
+                                 :else nil))}]
+        [:div.um__head-opts--right.um__head-opts--stat
+         (if (pos? (-> stat :users :all))
+           [:div.um__head-stat
+            [:div [:span [:a {:title (make-age-stats-string (-> stat :users :age-stats)) :href "javascript:;"} "年龄占比前20名" [:i.fa.fa-hand-paper-o]]]]
+            [:div (str "总用户数：" (-> stat :users :all))]
+            [:div (str "设备用户数：" (-> stat :users :wm))]
+            [:div (str "周活跃用户数：" (-> stat :week-cnt))]
+            [:div (str "月活跃用户数：" (-> stat :month-cnt))]]
+           [:p "无用户"])]
+        [:a.btn-light.um__head-opts--left {:href "javascript:;" :on-click #(show-tab :user-add)} "添加用户"]
+        [:a.btn-light.um__head-opts--left {:href "javascript:;" :on-click #(show-tab :m-broadcast)} "广播消息"]
+        ])
      [userlist-table]
      [user-add-field]
      [m-broadcast-panel]

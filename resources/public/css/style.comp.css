@@ -1228,16 +1228,17 @@ body {
     margin-bottom: 2rem; }
 
 .um__head-opts {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-row-gap: 1rem;
   align-items: center; }
   .um__head-opts > input {
     border: none;
     border-bottom: 1px solid #000; }
-
-.um__add-user {
-  margin-left: auto;
-  font-size: .8rem; }
+  .um__head-opts--left {
+    margin-right: auto; }
+  .um__head-opts--right {
+    margin-left: auto; }
 
 .um__row {
   margin-bottom: 1rem;
@@ -1264,8 +1265,15 @@ body {
     margin-right: 2rem; }
 
 .app-msg {
-  overflow-y: scroll;
-  max-height: 50vh; }
+  overflow-y: scroll; }
+  .app-msg--dialog {
+    padding: 1rem;
+    width: 80vw;
+    background: #fff;
+    position: absolute;
+    left: 10vw;
+    top: 10vh;
+    height: 80vh; }
   .app-msg > textarea, .app-msg > input {
     width: 90%;
     margin-left: 5%; }
@@ -1303,3 +1311,23 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: .5rem; }
+
+.mab {
+  display: flex;
+  flex-direction: column; }
+  .mab__btn-group {
+    display: flex;
+    justify-content: space-around; }
+  .mab__send-body {
+    display: grid;
+    grid-template-columns: 1;
+    grid-row-gap: 1rem;
+    margin-bottom: 1rem; }
+    .mab__send-body input, .mab__send-body textarea {
+      font-family: inherit;
+      color: inherit;
+      padding: .5rem .35rem;
+      border-radius: 4px;
+      border: 1px solid #E8E8E8; }
+    .mab__send-body textarea {
+      height: 6rem; }

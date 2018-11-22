@@ -67,8 +67,17 @@
                    :callback-success #(reset! product-list-store (:data %))})
         :error-handler default-error-handler}))
 
-(defn valid-product? [_]
-  true)
+(defn invalid-product? [{:keys [description v-image price-yuan images cover title ts status id score v-tag v-cover tag price sid]}]
+  (or
+   (when (s/blank? description) {:key :description :msg "描述不能为空"})
+   (when (not (seq v-image)) {:key :v-image :msg "至少上传一张内容图片"})
+   (when (not (seq v-cover)) {:key :v-image :msg "至少上传一张封面图片"})
+   (when (or (s/blank? price-yuan)
+             (neg? price-yuan)) {:key :price-yuan :msg "价格不合法"})
+   (when (or (s/blank? score)
+             (neg? score)) {:key :score :msg "所需积分不合法"})
+   (when (s/blank? title) {:key :title :msg "商品标题不能为空"})
+   (when (not (pos? sid)) {:key :sid :msg "请选择卖家"})))
 
 (defn add-product [prod]
   (PUT "/shop/product"
@@ -88,7 +97,8 @@
 (defn upsert-prod-btn-group [edit?]
   [:div.prod__btn-group
    [:a.btn-light {:href "javascript:;"
-                  :on-click #(when (valid-product? @product-state)
+                  :on-click #(if-let [{:keys [key msg]} (invalid-product? @product-state)] 
+                               (js/alert msg)
                                (add-product @product-state))}
     (if edit? "保存" "添加")]
    [:a.btn-light {:href "javascript:;" :on-click #(do
@@ -222,10 +232,11 @@
       [:span "商城"]
       "  >  "
       [:span.bkcrc-seceondT "商品管理"]]
-     (when-not (:panel @app-state)
+     (when (= (:panel @app-state :home) :home)
        [:button.buttons.mt10 {:on-click #(swap! app-state assoc :panel :add)} "添加"])
      (case (:panel @app-state)
        :add [product-panel]
        :edit [product-panel]
        [prod-list-panel])]))
+
 

@@ -1239,6 +1239,9 @@ body {
     margin-right: auto; }
   .um__head-opts--right {
     margin-left: auto; }
+  .um__head-opts--stat {
+    grid-row: 1 / 4;
+    grid-column: 2 /3; }
 
 .um__row {
   margin-bottom: 1rem;
@@ -1263,6 +1266,13 @@ body {
   display: flex; }
   .um__btn-group > a {
     margin-right: 2rem; }
+
+.um__head-stat {
+  display: flex;
+  flex-direction: column;
+  padding: .5rem;
+  border: 1px solid #E8E8E8;
+  border-radius: 4px; }
 
 .app-msg {
   overflow-y: scroll; }
@@ -1315,6 +1325,9 @@ body {
 .mab {
   display: flex;
   flex-direction: column; }
+  .mab h4 {
+    margin-top: 1rem;
+    margin-bottom: 1rem; }
   .mab__btn-group {
     display: flex;
     justify-content: space-around; }
@@ -1331,3 +1344,11 @@ body {
       border: 1px solid #E8E8E8; }
     .mab__send-body textarea {
       height: 6rem; }
+  .mab__jpush-notify {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center; }
+    .mab__jpush-notify > input {
+      width: 1rem;
+      height: 1rem;
+      margin-left: 2rem; }
