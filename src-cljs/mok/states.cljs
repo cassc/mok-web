@@ -18,3 +18,21 @@
 
 
 (defonce seller-list-store (atom []))
+
+(defonce aliyun-oss-config {:endpoint "https://oss-cn-beijing.aliyuncs.com" ;; "https://oss-cn-beijing-internal.aliyuncs.com"
+                            :bucket-name "jianqing"
+                            :access-key-id "LTAIB6Qlvy4dylDW"
+                            :access-key-secret "iIWX9MXK84ktnfJlnFJfET1k6gWeBW"
+                            :base-url "https://jianqing.oss-cn-beijing.aliyuncs.com/"})
+
+(defn get-oss []
+  (js/OSS
+   (clj->js
+    {:endpoint "https://oss-cn-beijing.aliyuncs.com"
+     :region "oss-cn-beijing"
+     :bucket "jianqing"
+     :accessKeyId "LTAIB6Qlvy4dylDW"
+     :accessKeySecret "iIWX9MXK84ktnfJlnFJfET1k6gWeBW"})))
+
+
+

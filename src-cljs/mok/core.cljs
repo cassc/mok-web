@@ -7,6 +7,7 @@
    [mok.pages.company :refer [get-companylist get-all-langs]]
    [mok.pages.broadcast :refer [broadcast messages msg-queue]]
    [mok.pages.um :refer [um]]
+   [mok.pages.video :refer [videos-page]]
    [mok.pages.seller :refer [seller-manage]]
    [mok.pages.prod :refer [prod-manage]]
    [mok.pages.order :refer [order-manage]]
@@ -64,7 +65,10 @@
             [:a {:href "#/banner-manage"} "社区Banner管理"]])
          (when (user-has-right? :mblog)
            [:li {:class (when (= (session/get :page) :report-manage) "bk-li-active")}
-            [:a {:href "#/report-manage"} "举报管理"]])]])
+            [:a {:href "#/report-manage"} "举报管理"]])
+         (when (user-has-right? :mblog)
+           [:li {:class (when (= (session/get :page) :videos) "bk-li-active")}
+            [:a {:href "#/videos"} "视频课程"]])]])
      [:div
       [:div.bkl-title.bkl-img2 "商城"]
       [:ul.bk-ul
@@ -126,7 +130,8 @@
    :mblog-manage #'mblog-manage
    :banner-manage #'banner-manage
    :acts-manage #'acts-manage
-   :report-manage #'report-manage})
+   :report-manage #'report-manage
+   :videos #'videos-page})
 
 (defn page []
   [(pages (session/get :page))])
@@ -140,6 +145,9 @@
 
 (secretary/defroute "/broadcast" []
   (session/put! :page :broadcast))
+
+(secretary/defroute "/videos" []
+  (session/put! :page :videos))
 
 (secretary/defroute "/msg-queue" []
   (session/put! :page :msg-queue))

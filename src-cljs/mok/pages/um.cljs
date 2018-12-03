@@ -4,7 +4,7 @@
   (:require
    [mok.states :refer [companylist]]
    [mok.utils :as utils :refer [make-toast date-formatter datetime-formatter loading-spinner default-error-handler
-                                status-text
+                                status-text upload-static-file
                                 error-toast make-resp-handler get-window-width get-window-height cid->name admin? set-title! session-expired?]]
    [mok.pages.company :refer [get-companylist]]
    [clojure.string :as s]
@@ -254,10 +254,26 @@
                  :on-change #(swap! msg-store assoc :title (-> % .-target .-value))}]
         [:textarea {:value (or (:msg @msg-store) )
                     :on-change #(swap! msg-store assoc :msg (-> % .-target .-value))}]
+        (if-let [img (:img @msg-store)]
+          [:img.mab__img {:src img :on-click #(swap! msg-store dissoc :img)}]
+          [:input
+           {:type :file
+            :on-change (fn [e]
+                         (let [file (first (array-seq (.. e -target -files)))]
+                           (upload-static-file
+                            {:file file
+                             :callback-success
+                             #(when-let [src (:data %)]
+                                (swap! msg-store assoc :img src))})))}])
+        [:div.mab__jpush-notify
+         [:div.mab__jpush-notify-label "同时使用JPUSH推送？"]
+         [:input {:type :checkbox :on-change #(swap! msg-store update :jpush? not)}]]
         [:div.app-msg__btn-group
          [:a.btn-light {:href "javascript:;" :on-click #(when-not (s/blank? @msg-store)
                                                           (send-app-msg-to u @msg-store))} "发送"]
-         [:a.btn-light {:href "javascript:;" :on-click #(toggle-app-msg-dialog u)} "关闭"]]]])))
+         [:a.btn-light {:href "javascript:;" :on-click #(do
+                                                          (toggle-app-msg-dialog u)
+                                                          (reset! msg-store {}))} "关闭"]]]])))
 
 ;; com.jianqing.btcontrol/3.0.4 (Android;MHA-AL00;8.0.0)
 (defn parse-android-ua [ua]
@@ -386,6 +402,17 @@
                 :on-change #(swap! msg-store assoc :title (-> % .-target .-value))}]
        [:textarea {:value (or (:msg @msg-store) )
                    :on-change #(swap! msg-store assoc :msg (-> % .-target .-value))}]
+       (if-let [img (:img @msg-store)]
+         [:img.mab__img {:src img :on-click #(swap! msg-store dissoc :img)}]
+         [:input
+          {:type :file
+           :on-change (fn [e]
+                        (let [file (first (array-seq (.. e -target -files)))]
+                          (upload-static-file
+                           {:file file
+                            :callback-success
+                            #(when-let [src (:data %)]
+                               (swap! msg-store assoc :img src))})))}])
        [:div.mab__jpush-notify
         [:div.mab__jpush-notify-label "同时使用JPUSH推送？"]
         [:input {:type :checkbox :on-change #(swap! msg-store update :jpush? not)}]]

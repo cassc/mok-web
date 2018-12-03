@@ -74,8 +74,8 @@
   }
   
   & > textarea, & > input{
-    width: 90%; 
-    margin-left: 5%;
+    width: 100%; 
+    @include cInput; 
   }
 
   & > input{
@@ -135,6 +135,11 @@
     align-items:center;
     padding: .5rem;
   }
+
+  &__img{
+    max-width: 100%;
+    max-height: 8rem;
+  }
 }
 
 .mab{
@@ -184,5 +189,10 @@
       height: 1rem;
       margin-left: 2rem;
     }
+  }
+
+  &__img{
+    max-width: 100%;
+    max-height: 8rem;
   }
 }
