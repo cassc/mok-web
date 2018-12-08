@@ -82,6 +82,9 @@
       :input-attrs {:style {:width "80px"}}
       :pikaday-attrs pikaday-construct}]))
 
+(defn- show-act-mblogs [id]
+  )
+
 (defn act-item [bn]
   (fn [{:keys [id title slogan pica picb howtojoin ts_start ts_end reward description status nusers nposts position] :as bn}]
     [:div.fd-div
@@ -89,10 +92,9 @@
       [:li.fd-li (li-style "5%") id]
       [:li.fd-li (li-style "5%") title]
       [:li.fd-li (li-style "5%") slogan]
-      [:li.fd-li (li-style "15%")
-       [:img {:style {:width "50px" :height "50px"} :src pica}]
-       [:span " "]
-       [:img {:style {:width "60px" :height "80px"} :src picb}]]
+      [:li.fd-li.act__item-imgs (li-style "15%")
+       [:img {:src pica}]
+       [:img {:src picb}]]
       [:li.fd-li (li-style "10%") howtojoin]
       [:li.fd-li (li-style "10%") (str (or nposts 0) "/" (or nusers 0))]
       [:li.fd-li (li-style "10%") (format-date ts_start)]
@@ -102,9 +104,14 @@
       [:li.fd-li (li-style "5%") (m-status status)]
       [:li.fd-li (li-style "5%") position]
       [:li.fd-li (li-style "5%")
-       [:a {:href "javascript:;"
-            :on-click #(reset! act-state bn)}
-        "编辑"]]]]))
+       [:div
+        [:a {:href "javascript:;"
+             :on-click #(reset! act-state bn)}
+         "编辑"]]
+       [:div
+        [:a {:href "javascript:;"
+             :on-click #(show-act-mblogs id)}
+         "查看"]]]]]))
 
 (defn act-list-ul []
   (fn []
@@ -134,16 +141,18 @@
   []
   (fn []
     (let [{:keys [id title slogan pica picb howtojoin start end reward description status ts_start ts_end position]} @act-state]
-      [:div#act-edit-dialog-parent.alertViewBox {:style {:display :block :text-align :left}}
+      [:div#act-edit-dialog-parent.alertViewBox.act-edit {:style {:display :block :text-align :left}}
        [:div#act-edit-dialog.alertViewBoxContent
        [:h4 (if id "编辑" "添加") "活动"]
        [:div.ct.edit
-        [:div "活动主题"
+        [:div.act-edit__row
+         [:div.act-edit__row-label "活动主题"]
          [:input
           {:type :text
            :value title
            :on-change #(swap! act-state assoc :title (-> % .-target .-value))}]]
-        [:div "活动口号"
+        [:div.act-edit__row
+         [:div.act-edit__row-label "活动口号"]
          [:input
           {:type :text
            :value slogan
@@ -170,7 +179,7 @@
          [:p
          "活动首页封面"
          [:span.red  "(350 X 120)"]
-          [:img {:style {:width "50px" :height "50px"} :src pica}]
+          [:img.act-edit__pica-img {:src pica}]
           [:input
            {:type :file
             :on-change (fn [e]
@@ -183,7 +192,7 @@
          [:p 
          "活动主页封面"
          [:span.red "(375 X 150)"]
-          [:img {:style {:width "60px" :height "80px"} :src picb}]
+          [:img.act-edit__picb-img {:src picb}]
           [:input
            {:type :file
             :on-change (fn [e]

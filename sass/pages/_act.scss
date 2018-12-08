@@ -1,0 +1,26 @@
+.act{
+  &__item-imgs{
+    display:flex;
+    flex-direction:column;
+    & > img{
+      max-width: 100%;
+    }
+  }
+}
+
+.act-edit{
+  &__row{
+    display: flex;
+    justify-content: space-between;
+    & > input{
+      flex: 1;
+    }
+  }
+  &__pica-img{
+    max-width: 150px;
+  }
+
+  &__picb-img{
+    max-width: 150px;
+  }
+}

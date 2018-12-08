@@ -2176,7 +2176,8 @@ table.user-info-dialog td{
 }
 #mblog-details-dialog-head-img-span span{
       width: 90%;
-    display: block;
+      display: block;
+      font-weight: bold;
 }
 #mblog-details-dialog-head-img-span input{
       float: right;
@@ -2213,6 +2214,7 @@ table.user-info-dialog td{
 #act-edit-dialog{
   height: 800px;
   margin-top: -200px;
+  overflow-y: scroll;
 }
 #act-edit-dialog .edit div{
   padding: 5px 0;

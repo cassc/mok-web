@@ -5,6 +5,7 @@
    [alandipert.storage-atom       :refer [local-storage]]
    [cljs.core.async :as async
     :refer [>! <! put! chan alts!]]
+   [mok.pages.acts :as acts]
    [mok.utils :refer [make-toast date-formatter datetime-formatter loading-spinner
                       default-error-handler ts->readable-time
                       pikaday-construct format-date
@@ -38,13 +39,16 @@
 (defn- toggle-mid-to-delete [mid]
   (swap! mblog-ids-to-delete (fn [xs] (if (xs mid) (disj xs mid) (conj xs mid)))))
 
-(defn update-cached-md [{:keys [id] :as md}]
+(defn update-cached-md [{:keys [id score] :as md}]
   (swap!
    mblog-list-store
    (fn [xs]
      (mapv (fn [mbo]
              (if (= id (:id mbo))
-               (merge mbo md)
+               (let [nmd (merge mbo md)]
+                 (if (and score (pos? (js/parseInt score)))
+                   (assoc nmd :jifen {:score score})
+                   nmd))
                mbo))
            xs))))
 
@@ -119,7 +123,9 @@
      [:h4 "删除"]
       (let [{:keys [id msg account_id ts pic nickname company phone haier likes replies ispop pop_weight weight]} @mblog-details]
         [:div.ct
-         [:div#mblog-details-dialog-head-img [:img {:style {:width "120px" :height "120px" :border-radius "5px":margin-right "10px"} :src (str "/mm/pic/" pic)}]
+         [:div#mblog-details-dialog-head-img
+          (when-not (s/blank? pic)
+            [:img {:style {:max-width "120px" :max-height "120px" :border-radius "5px":margin-right "10px"} :src (str "/mm/pic/" pic)}])
           [:span#mblog-details-dialog-head-img-span
            [:span msg]
            [:input {:type :checkbox :on-change #(toggle-mid-to-delete id)}]]]
@@ -145,9 +151,9 @@
   []
   (fn []
     [:div.alertViewBox {:style {:display :block :text-align :left}}
-     (let [{:keys [id nickname ispop pop_weight weight]} @with-mblog-weight-dialog]
+     (let [{:keys [id nickname ispop pop_weight weight jifen score]} @with-mblog-weight-dialog]
        [:div#mblog-details-dialog.alertViewBoxContent
-       [:h4 "设置"]
+        [:h4 "设置"]
         [:div.ct
          [:div
           [:p
@@ -166,7 +172,14 @@
           [:input {:type :number :placeholder "打卡权重"
                    :value weight
                    :on-change #(swap! with-mblog-weight-dialog assoc :weight (-> % .-target .-value))}]]
-         [:button#mblog-details-dialog-buttona {:on-click #(update-md (select-keys @with-mblog-weight-dialog [:id :weight :pop_weight :ispop]))} "保存"]
+         (if jifen
+           [:p "已获取积分：" (str (:score jifen))]
+           [:p
+            [:span "赠送积分(只允许赠送一次)："]
+            [:input {:type :number :placeholder "积分值"
+                     :value (or score 0)
+                     :on-change #(swap! with-mblog-weight-dialog assoc :score (-> % .-target .-value))}]])
+         [:button#mblog-details-dialog-buttona {:on-click #(update-md (select-keys @with-mblog-weight-dialog [:id :weight :pop_weight :ispop :score]))} "保存"]
          [:button#mblog-details-dialog-buttonb {:on-click #(reset! with-mblog-weight-dialog nil)} "取消"]]])]))
 
 (def mblog-list
@@ -234,43 +247,48 @@
 
 (defn mblog-manage []
   (set-title! "社区内容管理")
+  (acts/get-act-list)
   (fn []
     [:div.id.bkcr-content
      [:p.bkcrc-title
       [:span "管理"]
       "  >  "
       [:span.bkcrc-seceondT "社区内容管理"]]
-     [:div.menu-div
-      [:div.menu-search
-      [start-pickday]
-      [:span "至"]
-      [end-pickday]
-      ]
-      [:div.menu-search
-      [:span "内容"]
-      [:input {:type :text :placeholder "内容关键字"
-               :value (:content @mblog-list-query-params)
-               :on-change #(swap! mblog-list-query-params assoc :content (-> % .-target .-value))}]
-      ]
-      [:div.menu-search
-      [:span "昵称"]
-      [:input {:type :text :placeholder "昵称"
-               :value (:nickname @mblog-list-query-params)
-               :on-change #(swap! mblog-list-query-params assoc :nickname (-> % .-target .-value))}]
-      ]
-      [:div.menu-search
-      [:span [:input {:type :checkbox
-                      :checked (:pop-only @mblog-list-query-params)
-                      :on-change #(swap! mblog-list-query-params update-in [:pop-only] not)}]
-       "达人"]
-      ]
-      [:div.menu-search
-      [:span "打卡权重"]
-       [:input {:type :number :placeholder "打卡权重"
+     [:div.mblog__menu
+      [:div
+       [start-pickday]
+       [:span "至"]
+       [end-pickday]]
+      [:div
+       [:span "内容"]
+       [:input {:type :text :placeholder "内容关键字"
+                :value (:content @mblog-list-query-params)
+                :on-change #(swap! mblog-list-query-params assoc :content (-> % .-target .-value))}]]
+      [:div
+       [:span "昵称"]
+       [:input {:type :text :placeholder "昵称"
+                :value (:nickname @mblog-list-query-params)
+                :on-change #(swap! mblog-list-query-params assoc :nickname (-> % .-target .-value))}]]
+      [:div
+       [:span [:input {:type :checkbox
+                       :checked (:pop-only @mblog-list-query-params)
+                       :on-change #(swap! mblog-list-query-params update-in [:pop-only] not)}]
+        "达人"]]
+      [:div
+       [:span "打卡权重"]
+       [:input {:type :number :placeholder "最小打卡权重"
                 :value (:weight @mblog-list-query-params)
-                :on-change #(swap! mblog-list-query-params assoc :weight (-> % .-target .-value))}]
-      ]
-      [:button {:on-click #(reload-mblog-list)} "查询"]]
+                :on-change #(swap! mblog-list-query-params assoc :weight (-> % .-target .-value))}]]
+      [:div.mblog__menu--act-selection
+       [:span "只看活动"]
+       [:select {:value (:actid @mblog-list-query-params "0")
+                 :on-change #(let [idx (.. % -target -selectedIndex)]
+                               (swap! mblog-list-query-params assoc :actid (-> (aget (.-target %) idx) .-value)))}
+        [:option {:value "0"} "不限"]
+        (for [{:keys [id title]} (reverse (sort-by :id @acts/act-list-store))]
+          [:option {:key (str "mb.actid." id) :value (str id)} (str "(" id ") " title)])]]]
+     [:div.mblog__query-btn
+      [:button.btn-light {:on-click #(reload-mblog-list)} "查询"]]
      [mblog-list]
      (when @mblog-details
        [mblog-details-dialog])

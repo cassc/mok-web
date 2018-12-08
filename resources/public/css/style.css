@@ -1384,3 +1384,32 @@ body {
   .mab__img {
     max-width: 100%;
     max-height: 8rem; }
+
+.act__item-imgs {
+  display: flex;
+  flex-direction: column; }
+  .act__item-imgs > img {
+    max-width: 100%; }
+
+.act-edit__row {
+  display: flex;
+  justify-content: space-between; }
+  .act-edit__row > input {
+    flex: 1; }
+
+.act-edit__pica-img {
+  max-width: 150px; }
+
+.act-edit__picb-img {
+  max-width: 150px; }
+
+.mblog__menu {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between; }
+  .mblog__menu > * {
+    padding: .4rem; }
+
+.mblog__query-btn {
+  display: flex;
+  justify-content: flex-end; }
