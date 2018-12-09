@@ -1,7 +1,8 @@
 (ns mok.utils
   (:refer-clojure :exclude [partial atom flush])
   (:require
-   [mok.states :refer [me companylist seller-list-store get-oss]]
+   [mok.states :refer [me companylist seller-list-store get-oss
+                       jianqing-oss-base]]
    
    [clojure.string :as s]
    [ajax.core :refer [GET PUT DELETE]]
@@ -320,6 +321,11 @@
     (> (.-size file) (* 4 1024 1024)) (make-toast :error "文件大小不能超过4MB。")
     :else (upload-file {:image file :callback-success cb-success})))
 
-(defn oss-upload [key file]
-  (let [client (get-oss)]
-    (.put client key file)))
+(defn oss-upload [key file cb]
+  (let [client (get-oss)
+        p (.put client key file)]
+    (when cb
+      (.then p cb))))
+
+(defn oss-res [ky]
+  (str jianqing-oss-base ky))

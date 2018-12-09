@@ -6,7 +6,7 @@
                                 default-error-handler ts->readable-time
                                 maybe-upload-file
                                 make-resp-handler get-window-width get-window-height cid->name admin? set-title! session-expired?
-                                load-sellers!]]
+                                load-sellers! oss-res]]
    [mok.states :refer [seller-list-store]]
    
    [alandipert.storage-atom       :refer [local-storage]]
@@ -18,6 +18,7 @@
    [reagent.session :as session]
    [cljs-pikaday.reagent :as pikaday]
    [reagent.debug :as d :include-macros true]
+   [reagent.crypt :as crypt]
    [secretary.core :as secretary :include-macros true]
    [ajax.core :refer [GET PUT DELETE POST]]
    [cljs-time.format :refer [unparse formatter parse show-formatters]]
@@ -25,7 +26,14 @@
    [cljs-time.core :refer [date-time now time-zone-for-offset to-default-time-zone]]))
 
 (defonce x-tutorials-store (atom []))
-(defonce tutorial-store (atom {}))
+
+(defonce default-video {:x-images [] :title nil})
+
+(defonce tutorial-store (atom {:dir (str (.getTime (js/Date.)))
+                               :x-video [(atom default-video)]})) 
+
+(defn make-temp-video-atom []
+  (atom (assoc default-video :id (.getTime (js/Date.)))))
 
 (defn load-tutorials! []
   )
@@ -62,11 +70,60 @@
             :value (key @tutorial-store)
             :on-change #(swap! tutorial-store assoc key (-> % .-target .-value))}]])
 
+(defn- video-uploader [video-store]
+  (let [{:keys [title x-images]} @video-store]
+    [:div.video-edit__upload-sec
+     [:h3 {:on-click (fn [_]
+                       (when (js/confirm "确认删除此视频？")
+                         (swap! tutorial-store update :x-video #(remove (partial = video-store) %))))}
+      (if (s/blank? title)
+        "请上传视频"
+        (str "视频：" title))]
+     (if (s/blank? title)
+       [:input
+        {:type :file
+         :on-change (fn [e]
+                      (let [file (first (array-seq (.. e -target -files)))
+                            dir (:dir @tutorial-store)
+                            ky (when file (str dir "/" (.-name file)))]
+                        (when ky
+                          (if (s/ends-with? ky ".mp4")
+                            (utils/oss-upload ky file (fn [resp]
+                                                        (swap! video-store assoc :title ky)))
+                            (js/alert (str "不支持此文件类型：" (.-name file)))))))}]
+       [:video {:width 640 :height 480 :controls true}
+        [:source {:src (oss-res title)}]])
+     (when (not (s/blank? title))
+       [:div
+        [:div.video-edit__input-label "视频分解图"]
+        (when (seq x-images)
+          [:div.video-edit__video-imges
+           (doall
+            (for [image x-images]
+              [:img.video-edit__img
+               {:key (str "ve.img." image)
+                :src (oss-res image)
+                :on-click #(when (js/confirm "确认删除？")
+                             (swap! video-store (fn [xs] (remove (partial = image) xs))))}]))])
+        [:input
+         {:type :file
+          :on-change (fn [e]
+                       (let [file (first (array-seq (.. e -target -files)))
+                             dir (:dir @tutorial-store)
+                             ky (when file (str dir "/" (.-name file)))]
+                         (when (and ky (not (some (partial = ky) x-images)))
+                           (utils/oss-upload ky file (fn [resp]
+                                                       (swap! video-store update :x-images conj ky))))))}]])]))
+
 (defn tutorial-edit-panel []
   [:div.video
    [:h3 "添加课程"]
    [:div.video-edit
-    [plain-input :dir]
+    [:div.video-edit__input
+     [:div.video-edit__input-label (key-title :dir)]
+     [:input {:type :text
+              :value (:dir @tutorial-store)
+              :disabled :disabled}]]
     [plain-input :title]
     [plain-input :tag]
     [plain-input :calory]
@@ -74,20 +131,33 @@
     [plain-input :advice]
     [plain-input :audience]
     [num-input :duration]
-    [:input {:type :checkbox :on-change #(swap! tutorial-store update :rqdev not)}]
+    [:div.video-edit__input.video-edit__input--oneline
+     [:div.video-edit__input-label "需要器材？"]
+     [:input {:type :checkbox :on-change #(swap! tutorial-store update :rqdev not)}]]
     [:div
-     [:img {:src "" :alt "cover"}]
-     [:input
-      {:type :file
-       :on-change (fn [e]
-                    (let [file (first (array-seq (.. e -target -files)))
-                          dir (:dir @tutorial-store)]
-                      (utils/oss-upload (str dir (.-name file)) file)))}]]
-    [:div
-     [:input {:type :file}] ;; video source
-     [:div
-      [:img {:src "" :alt "video-image"}]
-      [:input {:type :file}]]]]])
+     [:div.video-edit__input-label "封面图（1张）"]
+     (if (s/blank? (:cover @tutorial-store))
+       [:input
+        {:type :file
+         :on-change (fn [e]
+                      (let [file (first (array-seq (.. e -target -files)))
+                            dir (:dir @tutorial-store)
+                            ky (str dir "/" (.-name file))]
+                        (utils/oss-upload ky file (fn [resp]
+                                                    (swap! tutorial-store assoc :cover ky)))))}]
+       [:img.video-edit__img {:src (oss-res (:cover @tutorial-store))
+                              :on-click #(when (js/confirm "确认删除？")
+                                           (swap! tutorial-store dissoc :cover))}])]
+    [:div.video-edit__video-upload
+     [:div.video-edit__input-label "视频（按序上传）"]
+     (doall
+      (for [video-store (:x-video @tutorial-store)]
+        ^{:key (str "ve.v.id." (:id @video-store))}
+        [video-uploader video-store]))
+     [:div.video-edit__video-upload-add
+      [:a.btn-light {:href "javascript:;"
+                     :on-click #(swap! tutorial-store update :x-video conj (make-temp-video-atom))}
+       "添加一段视频"]]]]])
 
 (defn videos-page []
   (set-title! "管理")

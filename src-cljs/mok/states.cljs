@@ -36,3 +36,4 @@
 
 
 
+(def jianqing-oss-base "https://jianqing.oss-cn-beijing.aliyuncs.com/")

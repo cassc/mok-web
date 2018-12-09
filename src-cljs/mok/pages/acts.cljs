@@ -107,11 +107,7 @@
        [:div
         [:a {:href "javascript:;"
              :on-click #(reset! act-state bn)}
-         "编辑"]]
-       [:div
-        [:a {:href "javascript:;"
-             :on-click #(show-act-mblogs id)}
-         "查看"]]]]]))
+         "编辑"]]]]]))
 
 (defn act-list-ul []
   (fn []
