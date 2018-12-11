@@ -227,6 +227,19 @@
   
   &__field{
     font-weight:bold;
+
+    &--editable{
+      display: flex;
+      justify-content: flex-start;
+      & > * {
+        &:not(:last-child){
+          margin-right: 1rem;
+        }
+      }
+      & > select{
+        width: 5rem !important;
+      }
+    }
   }
   
   input,
@@ -266,8 +279,10 @@
   }
 
   &__shipment{
-    margin-left: 2rem;
-    margin-right: 2rem;
+    margin-top: 1rem;
     margin-bottom: 2rem;
+    border: 1px solid lightgray;
+    padding: 1rem;
+    border-radius: 4px;
   }
 }

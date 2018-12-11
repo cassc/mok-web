@@ -1191,6 +1191,13 @@ body {
     margin-bottom: 2rem; }
   .order-edit__field {
     font-weight: bold; }
+    .order-edit__field--editable {
+      display: flex;
+      justify-content: flex-start; }
+      .order-edit__field--editable > *:not(:last-child) {
+        margin-right: 1rem; }
+      .order-edit__field--editable > select {
+        width: 5rem !important; }
   .order-edit input,
   .order-edit select {
     font-family: inherit;
@@ -1223,9 +1230,11 @@ body {
     font-size: 1.2rem;
     text-align: right; }
   .order-edit__shipment {
-    margin-left: 2rem;
-    margin-right: 2rem;
-    margin-bottom: 2rem; }
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+    border: 1px solid lightgray;
+    padding: 1rem;
+    border-radius: 4px; }
 
 .video-edit {
   display: grid;
@@ -1271,6 +1280,11 @@ body {
       padding: 1rem; }
   .video-edit__upload-sec {
     margin-bottom: 1rem; }
+  .video-edit__spinner {
+    width: 1rem;
+    height: 1rem;
+    animation: rotating 2s linear infinite;
+    margin-left: 1rem; }
 
 .video {
   margin-top: 2rem; }

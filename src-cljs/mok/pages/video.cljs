@@ -50,9 +50,18 @@
    :advice "建议"
    :audience "适合人群"
    :warning "注意事项"
-   :calory "热量消耗"
+   :calory "热量消耗（kCal）"
    :dir "目录"
    })
+
+(defn- validate-tutorial [{:keys [dir title tag cover reqdev duration advice audient warning calory x-video]}]
+  )
+
+;; {:calory "2.2", :dir "1544340238665", :x-video [#<Atom: {:x-images ["1544340238665/1544340238665/ether.mp4/2018-12-08-18:51_1544266280_948x334.png" "1544340238665/1544340238665/ether.mp4/2018-12-05-08:35_1543970155_286x310.png"], :title "1544340238665/ether.mp4", :uploading? true}> #<Atom: {:x-images ["1544340238665/1544340238665/trezor-pin.mp4/2018-12-08-18:51_1544266280_948x334.png" "1544340238665/1544340238665/trezor-pin.mp4/2018-12-05-08:35_1543970155_286x310.png"], :title "1544340238665/trezor-pin.mp4", :id 1544340737303}>], :cover "1544340238665/2018-12-08-18:51_1544266280_948x334.png", :duration "223", :advice "无", :title "test", :warning "无", :audience "所有", :tag "test"}
+(defn- upload! []
+  (let [tutorial @tutorial-store]
+    (validate-tutorial tutorial)
+    (t/info "adding" tutorial)))
 
 (defn plain-input [key]
   [:div.video-edit__input
@@ -71,14 +80,16 @@
             :on-change #(swap! tutorial-store assoc key (-> % .-target .-value))}]])
 
 (defn- video-uploader [video-store]
-  (let [{:keys [title x-images]} @video-store]
+  (let [{:keys [title x-images uploading?]} @video-store]
     [:div.video-edit__upload-sec
      [:h3 {:on-click (fn [_]
                        (when (js/confirm "确认删除此视频？")
                          (swap! tutorial-store update :x-video #(remove (partial = video-store) %))))}
       (if (s/blank? title)
         "请上传视频"
-        (str "视频：" title))]
+        (str "视频：" title))
+      (when uploading?
+        [:img.video-edit__spinner {:src "/images/spinner4.svg"}])]
      (if (s/blank? title)
        [:input
         {:type :file
@@ -86,10 +97,17 @@
                       (let [file (first (array-seq (.. e -target -files)))
                             dir (:dir @tutorial-store)
                             ky (when file (str dir "/" (.-name file)))]
-                        (when ky
+                        (when (and ky
+                                   (not (some (partial = ky)
+                                              (map (fn [m] (:title @m))
+                                                   (:x-video @tutorial-store)))))
                           (if (s/ends-with? ky ".mp4")
-                            (utils/oss-upload ky file (fn [resp]
-                                                        (swap! video-store assoc :title ky)))
+                            (do
+                              (swap! video-store assoc :uploading? true)
+                              (utils/oss-upload ky file
+                                                (fn [resp]
+                                                  (swap! video-store assoc :title ky))
+                                                (fn [] (swap! video-store dissoc :uploading?))))
                             (js/alert (str "不支持此文件类型：" (.-name file)))))))}]
        [:video {:width 640 :height 480 :controls true}
         [:source {:src (oss-res title)}]])
@@ -110,7 +128,7 @@
           :on-change (fn [e]
                        (let [file (first (array-seq (.. e -target -files)))
                              dir (:dir @tutorial-store)
-                             ky (when file (str dir "/" (.-name file)))]
+                             ky (when file (str dir "/" title "/" (.-name file)))]
                          (when (and ky (not (some (partial = ky) x-images)))
                            (utils/oss-upload ky file (fn [resp]
                                                        (swap! video-store update :x-images conj ky))))))}]])]))
@@ -119,11 +137,7 @@
   [:div.video
    [:h3 "添加课程"]
    [:div.video-edit
-    [:div.video-edit__input
-     [:div.video-edit__input-label (key-title :dir)]
-     [:input {:type :text
-              :value (:dir @tutorial-store)
-              :disabled :disabled}]]
+    [plain-input :dir]
     [plain-input :title]
     [plain-input :tag]
     [plain-input :calory]
@@ -157,7 +171,8 @@
      [:div.video-edit__video-upload-add
       [:a.btn-light {:href "javascript:;"
                      :on-click #(swap! tutorial-store update :x-video conj (make-temp-video-atom))}
-       "添加一段视频"]]]]])
+       "添加一段视频"]]]
+    [:a.btn-light {:href "javascript:;" :on-click #(upload!)} "添加本课程"]]])
 
 (defn videos-page []
   (set-title! "管理")

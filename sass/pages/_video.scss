@@ -60,6 +60,13 @@
       
     }
   }
+
+  &__spinner{
+    width: 1rem;
+    height: 1rem;
+    animation: rotating 2s linear infinite;
+    margin-left: 1rem;
+  }
 }
 
 .video{

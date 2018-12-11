@@ -321,11 +321,18 @@
     (> (.-size file) (* 4 1024 1024)) (make-toast :error "文件大小不能超过4MB。")
     :else (upload-file {:image file :callback-success cb-success})))
 
-(defn oss-upload [key file cb]
-  (let [client (get-oss)
-        p (.put client key file)]
-    (when cb
-      (.then p cb))))
+(defn oss-upload
+  ([ky file]
+   (oss-upload ky file nil nil))
+  ([ky file on-success]
+   (oss-upload ky file on-success nil))
+  ([key file cb on-done]
+   (let [client (get-oss)
+         p (.put client key file)]
+     (when cb
+       (.then p cb))
+     (when on-done
+       (.finally p on-done)))))
 
 (defn oss-res [ky]
   (str jianqing-oss-base ky))

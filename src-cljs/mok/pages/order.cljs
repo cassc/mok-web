@@ -26,7 +26,7 @@
 
 (defonce loading? (atom nil))
 
-(defonce app-state (atom {}))
+(defonce app-state (atom {:query-status "paid"}))
 
 (defonce order-state (atom {}))
 (defonce order-list-store (atom []))
@@ -45,19 +45,37 @@
                    :callback-success #(reset! order-list-store (:data %))})
         :error-handler default-error-handler}))
 
-(defn update-order-product [{:keys [id ship_id ship_provider]}]
+(defn update-order-cache [{:keys [id] :as order}]
+  (swap! order-list-store (fn [xs] (mapv (fn [od] (if (= id (:id od)) order od)) xs))))
+
+(defn update-order-product [{:keys [id ship_id ship_provider oid] :as op}]
   (POST "/shop/order/product"
         {:response-format :json
-         :params {:id id :ship_id ship_id :ship_provider ship_provider}
+         :params {:id id :ship_id ship_id :ship_provider ship_provider :oid oid}
          :format :json
          :keywords? true
          :timeout 60000
          :handler (make-resp-handler
                    {:msg-fail "请求失败！"
-                    :callback-success #(do
-                                         (load-orders!)
-                                         (switch-to-panel :home)
-                                         (reset! order-state {}))})
+                    :callback-success (fn [{:keys [data]}]
+                                        (make-toast :info "保存成功！")
+                                        (reset! order-state data)
+                                        (update-order-cache data))})
+         :error-handler default-error-handler}))
+
+(defn update-order-status [{:keys [id]}]
+  (POST "/shop/order/complete"
+        {:response-format :json
+         :params {:id id}
+         :format :json
+         :keywords? true
+         :timeout 60000
+         :handler (make-resp-handler
+                   {:msg-fail "请求失败！"
+                    :callback-success (fn [_]
+                                        (make-toast :info "保存成功！")
+                                        (swap! order-state assoc :status "complete")
+                                        (update-order-cache @order-state))})
          :error-handler default-error-handler}))
 
 (defn order-product-panel [prod]
@@ -90,6 +108,7 @@
 (def m-status
   {"pending" "未支付"
    "paid" "已付款"
+   "delivery" "已发货"
    "complete" "已完成"
    "cancel" "已取消"
    "hide" "已删除"})
@@ -102,6 +121,22 @@
                                (reset! order-state {}))}
     "返回订单列表"]])
 
+;; (defn- order-status-editor [order]
+;;   (let [state (atom order)]
+;;     (fn [_]
+;;       [:div.order-edit__field--editable
+;;        [:select {:on-change #(let [idx (.. % -target -selectedIndex)
+;;                                    status (-> (aget (.-target %) idx) .-value)]
+;;                                (swap! state assoc :status status)
+;;                                (load-orders!))
+;;                  :value (:status @state)}
+;;         (doall
+;;          (for [[st txt] m-status]
+;;            [:option {:value st :key (str "st." st)} txt]))]
+;;        (when (not= (:status @state) (:status order))
+;;          [:a.btn-light {:on-click #(update-order-status @order-state)} "保存"])
+;;        [:a.btn-light {:on-click #(swap! order-state dissoc :edit-status?)} "取消"]])))
+
 (defn order-panel []
   [:div.order-edit
    [close-btn]
@@ -110,18 +145,30 @@
     [:div.order-edit__field (:fullname @order-state)]
     [:div.order-edit__label "收货人电话"]
     [:div.order-edit__field (:phone @order-state)]
-    [:div.order-edit__label "支付状态"]
-    [:div.order-edit__field (m-status (:status @order-state))]
     [:div.order-edit__label "收货人地址"]
     [:div.order-edit__field (make-address @order-state)]
     [:div.order-edit__label "邮编"]
-    [:div.order-edit__field (:zipcode @order-state)] ]
+    [:div.order-edit__field (:zipcode @order-state)]
+    [:div.order-edit__label "订单状态"]
+    ;; [:div.order-edit__field
+    ;;  (if (:edit-status? @order-state)
+    ;;    [order-status-editor @order-state]
+    ;;    [:span {:on-click #(when (js/confirm "修改订单状态？")
+    ;;                         (swap! order-state assoc :edit-status? true))}
+    ;;     (m-status (:status @order-state))])]
+    [:div.order-edit__field (m-status (:status @order-state))]]
    [:div.order-edit__label "商品列表"]
    (doall
     (for [product (:products @order-state)]
       ^{:key (str "o." (:id @order-state) ".p." (:id product))}
       [order-product-panel product]))
-   [close-btn]]) 
+   (when (= "delivery" (:status @order-state))
+     [:a.btn-light {:href "javascript:;"
+                    :on-click #(when (js/confirm "确认完成此订单？")
+                                 (update-order-status (assoc @order-state :status "complete")))}
+      "确认收货"])
+   ;;[close-btn]
+   ]) 
 
 (defn order-list-panel []
   [:div.order

@@ -66,9 +66,10 @@
          (when (user-has-right? :mblog)
            [:li {:class (when (= (session/get :page) :report-manage) "bk-li-active")}
             [:a {:href "#/report-manage"} "举报管理"]])
-         (when (user-has-right? :mblog)
-           [:li {:class (when (= (session/get :page) :videos) "bk-li-active")}
-            [:a {:href "#/videos"} "视频课程"]])]])
+         ;; (when (user-has-right? :mblog)
+         ;;   [:li {:class (when (= (session/get :page) :videos) "bk-li-active")}
+         ;;    [:a {:href "#/videos"} "视频课程"]])
+         ]])
      [:div
       [:div.bkl-title.bkl-img2 "商城"]
       [:ul.bk-ul
