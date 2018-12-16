@@ -31,7 +31,8 @@
 (defonce pop-msg-info (atom nil)) ;; app msg
 (defonce userstats (atom nil))
 (defonce active-tab (atom :userlist))
-(defonce jifen-state (atom {:phone "" :code "" :score ""}))
+(def default-jifen-state {:phone "" :code "" :score ""})
+(defonce jifen-state (atom default-jifen-state))
 (defonce jifen-code-list (atom []))
 (defonce active-jifen-panel (atom nil))
 
@@ -472,6 +473,7 @@
                    #(do
                       (load-jifen-code-list!)
                       (reset! active-jifen-panel :code-list)
+                      (reset! jifen-state default-jifen-state)
                       (make-toast "修改成功！"))})
         :error-handler (partial default-error-handler "/jifen")
         :response-format :json
