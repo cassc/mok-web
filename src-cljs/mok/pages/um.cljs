@@ -1,5 +1,8 @@
 (ns mok.pages.um
-  "User list/manage page "
+  "User list/manage page
+
+  JM03F40AA5K000ZBL
+  JM03F40AA是幻彩C3（白）的物料号；5K 指的是这个码可以兑换5000积分；000代表我们第几次编写兑换码；剩下三位是随机数。"
   (:refer-clojure :exclude [partial atom flush])
   (:require
    [mok.states :refer [companylist]]
@@ -28,6 +31,9 @@
 (defonce pop-msg-info (atom nil)) ;; app msg
 (defonce userstats (atom nil))
 (defonce active-tab (atom :userlist))
+(defonce jifen-state (atom {:phone "" :code "" :score ""}))
+(defonce jifen-code-list (atom []))
+(defonce active-jifen-panel (atom nil))
 
 (defn- show-tab [ky]
   (reset! active-tab ky))
@@ -421,6 +427,127 @@
                                                          (broadcast-app-msg @msg-store))} "发送"]
         [:a.btn-light {:href "javascript:;" :on-click #(show-tab :userlist)} "取消"]]]]]]])
 
+(defn- search-user-jifen [params]
+  (GET "/user"
+       {:params params
+        :handler (make-resp-handler
+                  {:callback-success
+                   (fn [{:keys [data]}]
+                     (if data
+                       (do
+                         (swap! jifen-state assoc :user data)
+                         (make-toast "查询成功！"))
+                       (make-toast :error "未找到用户！")))})
+        :error-handler (partial default-error-handler "/user")
+        :response-format :json
+        :keywords? true}))
+
+(defn- load-jifen-code-list! []
+  (GET "/jifen-code"
+       {:handler (make-resp-handler
+                  {:callback-success
+                   (fn [{:keys [data]}]
+                     (reset! jifen-code-list (or data [])))})
+        :error-handler (partial default-error-handler "/jifen-code")
+        :response-format :json
+        :keywords? true}))
+
+(defn- valid-jifen-code? [code]
+  (re-seq #"^[A-Za-z0-9]{17}$" code))
+
+(defn invalid-jifen-state? [{:keys [code score phone user]}]
+  (or
+   (when-not (valid-jifen-code? code)
+     "兑换码格式不正确，应为17位字符")
+   (when (not (:id user))
+     "请输入有效的已注册用户手机号，并点击搜索")
+   (when (or (s/blank? score) (<= (js/parseInt score) 0))
+     "请输入有效的分值")))
+
+(defn- add-jifen [{:keys [code score phone user]}]
+  (PUT "/jifen"
+       {:params {:aid (:id user) :score score :code code}
+        :handler (make-resp-handler
+                  {:callback-success
+                   #(do
+                      (load-jifen-code-list!)
+                      (reset! active-jifen-panel :code-list)
+                      (make-toast "修改成功！"))})
+        :error-handler (partial default-error-handler "/jifen")
+        :response-format :json
+        :format :json
+        :keywords? true}))
+
+(defn- add-jifen-panel []
+  [:div {:class (if (= :add-jifen @active-jifen-panel) "show" "hide")}
+   [:h4 "积分兑换"]
+   [:div.umjf__body
+    [:div "兑换码"]
+    [:input {:type :text :value (:code @jifen-state)
+             :on-change #(swap! jifen-state assoc :code (-> % .-target .-value))}]
+    [:div "手机号"]
+    [:div.umjf__phone-search
+     [:input {:type :text :value (:phone @jifen-state)
+              :placeholder "请输入用户的完整手机号"
+              :on-change #(swap! jifen-state assoc :phone (-> % .-target .-value) :user nil)}]
+     [:a.btn-light {:href "javascript:;" :on-click #(when-not (s/blank? (:phone @jifen-state))
+                                                      (search-user-jifen @jifen-state))} "搜索"]]
+    (when (:user @jifen-state)
+      [:div ""])
+    (when (:user @jifen-state)
+      [:div (str "当前积分" (get-in @jifen-state [:user :score]))])
+    [:div "分值"]
+    [:input {:type :text :value (:score @jifen-state)
+             :on-change #(swap! jifen-state assoc :score (-> % .-target .-value))}]
+    [:div.umjf__btn-group
+     [:a.btn-light {:href "javascript:;"
+                    :class (if (invalid-jifen-state? @jifen-state) "hide" "show")
+                    :on-click #(if-let [err (invalid-jifen-state? @jifen-state)]
+                                 (js/alert err)
+                                 (add-jifen @jifen-state))} "添加"]]]])
+
+(defn- jifen-code-list-panel []
+  [:div {:class (if (= :code-list @active-jifen-panel) "show" "hide")}
+   [:div.umjf__code-list
+    [:div.umjf__code-row.umjf__code-row--header
+     [:div "兑换码"]
+     [:div "用户手机号"]
+     [:div "分值"]
+     [:div "操作时间"]]
+    (doall
+     (for [{:keys [id code score ts haier aid]} @jifen-code-list]
+       [:div.umjf__code-row {:key (str "cdl." id)}
+        [:div code]
+        [:div haier]
+        [:div score]
+        [:div (str (utils/ts->readable-time ts))]]))]])
+
+(defn jifen-panel []
+  [:div {:class (if (= :jifen-panel @active-tab) "show" "hide")}
+   [:div.umjf
+    [:h3.umjf__title "积分兑换"]
+    [:div.umjf__return-btn
+     [:a.btn-light {:href "javascript:;" :on-click #(do
+                                                      (show-tab :userlist)
+                                                      (reset! active-jifen-panel nil))}
+      "< 返回"]]
+    [:div.umjf__top-nav
+     [:a {:href "javascript:;"
+          :class (when (= :code-list @active-jifen-panel)
+                   "umjf__top-nav-btn--active")
+          :on-click #(do
+                       (load-jifen-code-list!)
+                       (reset! active-jifen-panel :code-list))}
+      "查看已使用兑换码"]
+     [:span "|"]
+     [:a {:href "javascript:;"
+          :class (when (= :add-jifen @active-jifen-panel)
+                   "umjf__top-nav-btn--active")
+          :on-click #(reset! active-jifen-panel :add-jifen)}
+      "兑换积分"]]
+    [jifen-code-list-panel]
+    [add-jifen-panel]]])
+
 
 (defn- make-age-stats-string [age-dist]
   (reduce (fn [ss {:keys [age cnt percent]}]
@@ -485,10 +612,14 @@
             [:div (str "周活跃用户数：" (-> stat :week-cnt))]
             [:div (str "月活跃用户数：" (-> stat :month-cnt))]]
            [:p "无用户"])]
-        [:a.btn-light.um__head-opts--left {:href "javascript:;" :on-click #(show-tab :user-add)} "添加用户"]
-        [:a.btn-light.um__head-opts--left {:href "javascript:;" :on-click #(show-tab :m-broadcast)} "广播消息"]
+        [:div.um__head-opts--left
+         [:a.btn-light {:href "javascript:;" :on-click #(show-tab :user-add)} "添加用户"]
+         [:a.btn-light {:href "javascript:;" :on-click #(show-tab :jifen-panel)} "积分兑换"]]
+        [:div.um__head-opts--left
+         [:a.btn-light {:href "javascript:;" :on-click #(show-tab :m-broadcast)} "广播消息"]]
         ])
      [userlist-table]
      [user-add-field]
      [m-broadcast-panel]
+     [jifen-panel]
      [loading-spinner (:searching @search-state)]]))
