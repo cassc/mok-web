@@ -214,7 +214,16 @@
                             :on-change #(let [tpe (-> % .-target .-checked)]
                                           (if tpe
                                             (swap! admin-store update-in [:rightcode] bit-set 6)
-                                            (swap! admin-store update-in [:rightcode] bit-clear 6)))}]]]]
+                                            (swap! admin-store update-in [:rightcode] bit-clear 6)))}]]
+        ;; [:div
+        ;;  [:label {:for "shop"} "商城"]
+        ;;  [:input#adm-mblog {:type :checkbox
+        ;;                     :checked (bit-test (:rightcode @admin-store) 5)
+        ;;                     :on-change #(let [tpe (-> % .-target .-checked)]
+        ;;                                   (if tpe
+        ;;                                     (swap! admin-store update-in [:rightcode] bit-set 5)
+        ;;                                     (swap! admin-store update-in [:rightcode] bit-clear 5)))}]]
+        ]]
       [:div.admin__field-buttons
        [:a.btn-light {:href "javascript:;"
                       :on-click #(if-let [err (validate-admin-create @admin-store)]
@@ -300,7 +309,16 @@
                               :on-change #(let [tpe (-> % .-target .-checked)]
                                             (if tpe
                                               (swap! admin-store update-in [:rightcode] bit-set 6)
-                                              (swap! admin-store update-in [:rightcode] bit-clear 6)))}]]]]]
+                                              (swap! admin-store update-in [:rightcode] bit-clear 6)))}]]
+          ;; [:div
+          ;;  [:label {:for "shop"} "商城"]
+          ;;  [:input#adm-mblog {:type :checkbox
+          ;;                     :checked (bit-test (:rightcode @admin-store) 5)
+          ;;                     :on-change #(let [tpe (-> % .-target .-checked)]
+          ;;                                   (if tpe
+          ;;                                     (swap! admin-store update-in [:rightcode] bit-set 5)
+          ;;                                     (swap! admin-store update-in [:rightcode] bit-clear 5)))}]]
+          ]]]
        (when-not (= username "admin")
          [:div.admin__item-right
           [:a.btn-light.admin__item-save-btn

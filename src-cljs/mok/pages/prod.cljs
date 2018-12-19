@@ -7,7 +7,7 @@
                       maybe-upload-file
                       make-resp-handler get-window-width get-window-height cid->name admin? set-title! session-expired?
                       load-sellers!]]
-   [mok.states :refer [seller-list-store]]
+   [mok.states :refer [seller-list-store me]]
    
    [alandipert.storage-atom       :refer [local-storage]]
    [cljs.core.async :as async
@@ -68,16 +68,17 @@
         :error-handler default-error-handler}))
 
 (defn invalid-product? [{:keys [description v-image price-yuan images cover title ts status id score v-tag v-cover tag price sid]}]
-  (or
-   (when (s/blank? description) {:key :description :msg "描述不能为空"})
-   (when (not (seq v-image)) {:key :v-image :msg "至少上传一张内容图片"})
-   (when (not (seq v-cover)) {:key :v-image :msg "至少上传一张封面图片"})
-   (when (or (s/blank? price-yuan)
-             (neg? price-yuan)) {:key :price-yuan :msg "价格不合法"})
-   (when (or (s/blank? score)
-             (neg? score)) {:key :score :msg "所需积分不合法"})
-   (when (s/blank? title) {:key :title :msg "商品标题不能为空"})
-   (when (not (pos? sid)) {:key :sid :msg "请选择卖家"})))
+  (let [sid (if (admin?) sid (:sid @me))]
+    (or
+     (when (s/blank? description) {:key :description :msg "描述不能为空"})
+     (when (not (seq v-image)) {:key :v-image :msg "至少上传一张内容图片"})
+     (when (not (seq v-cover)) {:key :v-image :msg "至少上传一张封面图片"})
+     (when (or (s/blank? price-yuan)
+               (neg? price-yuan)) {:key :price-yuan :msg "价格不合法"})
+     (when (or (s/blank? score)
+               (neg? score)) {:key :score :msg "所需积分不合法"})
+     (when (s/blank? title) {:key :title :msg "商品标题不能为空"})
+     (when (not (pos? sid)) {:key :sid :msg "请选择卖家"}))))
 
 (defn add-product [prod]
   (PUT "/shop/product"
@@ -115,14 +116,16 @@
           [upsert-prod-btn-group edit?]]
          [:div.prod__details
           [:div.prod__label "店铺"]
-          [:select {:on-change #(let [idx (.. % -target -selectedIndex)
-                                      sid (js/parseInt (-> (aget (.-target %) idx) .-value))]
-                                  (swap! product-state assoc :sid sid))
-                    :value (:sid @product-state -1)}
-           [:option {:value -1} "请选择"]
-           (doall
-            (for [{:keys [id title]} @seller-list-store]
-              [:option {:value id :key (str "sp." id)} title]))]
+          (if (admin?)
+            [:select {:on-change #(let [idx (.. % -target -selectedIndex)
+                                        sid (js/parseInt (-> (aget (.-target %) idx) .-value))]
+                                    (swap! product-state assoc :sid sid))
+                      :value (:sid @product-state -1)}
+             [:option {:value -1} "请选择"]
+             (doall
+              (for [{:keys [id title]} @seller-list-store]
+                [:option {:value id :key (str "sp." id)} title]))]
+            (:title (first @seller-list-store)))
           [:div.prod__label "名称"]
           [:input {:type :text :value (:title @product-state "") :on-change #(swap! product-state assoc :title (-> % .-target .-value))}]
           [:div.prod__label "价格（元）"]
@@ -192,16 +195,18 @@
           [:a.btn-light
            {:href "javascript:;" :on-click #(swap! product-state update :status (fn [st] (if (= status "hide") "show" "hide")))}
            (if (= status "hide") "点击上架" "点击下架")]
-          [:div.prod__label "置顶位置"]
-          [:div.prod__top-list
-           (doall
-            (for [i (range 1 11)]
-              [:div.prod__top-item {:key (str "ti." i)
-                                    :class (cond
-                                             (= (:loc @product-state) i) "prod__top-item--active"
-                                             ((set (map :loc @top-products-store)) i) "prod__top-item--taken")
-                                    :on-click #(swap! product-state update :loc (fn [loc] (if (= loc i) -1 i)))}
-               (str i)]))]
+          (when (admin?)
+            [:div.prod__label "置顶位置"])
+          (when (admin?)
+            [:div.prod__top-list
+             (doall
+              (for [i (range 1 11)]
+                [:div.prod__top-item {:key (str "ti." i)
+                                      :class (cond
+                                               (= (:loc @product-state) i) "prod__top-item--active"
+                                               ((set (map :loc @top-products-store)) i) "prod__top-item--taken")
+                                      :on-click #(swap! product-state update :loc (fn [loc] (if (= loc i) -1 i)))}
+                 (str i)]))])
           
           [upsert-prod-btn-group edit?]]]))))
 

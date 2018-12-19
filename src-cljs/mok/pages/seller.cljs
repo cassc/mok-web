@@ -37,8 +37,8 @@
 (defn valid-seller? [_]
   true)
 
-(defn add-seller [{:keys [title owner phone description license] :as params}]
-  (PUT "/seller"
+(defn add-seller [{:keys [title owner phone description license password] :as params}]
+  (PUT "/admin/seller"
        {:params params
         :format :json
         :response-format :json
@@ -52,7 +52,7 @@
                                         (reset! seller-state {}))})
         :error-handler default-error-handler}))
 
-(defn save-seller [{:keys [phone fullname id] :as params}]
+(defn save-seller [{:keys [phone fullname id password] :as params}]
   (POST "/seller"
         {:params params
          :format :json
@@ -92,8 +92,22 @@
       [:input {:type :text :value (:title @seller-state "") :on-change #(swap! seller-state assoc :title (-> % .-target .-value))}]
       [:div.seller__label "店主姓名"]
       [:input {:type :text :value (:owner @seller-state "") :on-change #(swap! seller-state assoc :owner (-> % .-target .-value))}] 
-      [:div.seller__label "电话号码"]
-      [:input {:type :text :value (:phone @seller-state "") :on-change #(swap! seller-state assoc :phone (-> % .-target .-value))}]
+      [:div.seller__label "电话号码 " (when (admin?)
+                                        "(用于商家登录，全局唯一，创建后仅平台管理员可修改。请务必正确输入！)")]
+      (if (admin?)
+        [:input {:type :text :value (:phone @seller-state "") :on-change #(swap! seller-state assoc :phone (-> % .-target .-value))}]
+        [:span (:phone @seller-state)])
+      ;; (when-not (admin?)
+      ;;   [:div.seller__label.clickable {:on-click #(swap! seller-state update :edit-pass? not)} "修改密码"])
+      ;; (when (:edit-pass? @seller-state)
+      ;;   [:input {:type :text
+      ;;            :placeholder "请输入新密码"
+      ;;            :value (:password @seller-state "")
+      ;;            :on-change #(swap! seller-state assoc :password (-> % .-target .-value))}])
+      (when (and (admin?) (not edit?))
+        [:div.seller__label "密码"])
+      (when (and (admin?) (not edit?))
+        [:input {:type :text :value (:password @seller-state "") :on-change #(swap! seller-state assoc :password (-> % .-target .-value))}])
       [:div.seller__label "店铺介绍"]
       [:textarea {:value (:description @seller-state "") :on-change #(swap! seller-state assoc :description (-> % .-target .-value))}]
       [:div.seller__btn-group
@@ -101,7 +115,7 @@
                       :on-click #(when (valid-seller? @seller-state)
                                    ((if edit? save-seller add-seller) @seller-state))}
         (if edit? "保存" "添加")]
-       (when edit?
+       (when (and edit? (admin?))
          [:a.btn-light {:href "javascript:;"
                         :on-click #(when (js/confirm "确认删除此店铺？")
                                      (delete-seller @seller-state))}

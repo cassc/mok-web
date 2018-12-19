@@ -233,24 +233,19 @@
   [& [width]]
   [:span {:style {:width (or width "12px") :display :inline-block}}])
 
-(def ^:private rights-map
-  {:company 2r1
-   :wx-device 2r10
-   :feedback 2r100
-   :broadcast 2r1000
-   :usermanage 2r10000})
-
-(def rightcode-bit-map
+(defonce rightcode-bit-map
   {2 {:key :feedback :title "用户反馈"}
    3 {:key :broadcast :title "推送消息"}
    4 {:key :usermanage :title "用户管理"}
+   5 {:key :shop :title "商城"}
    6 {:key :mblog :title "社区活动"}})
 
 (def map-rightcode
-  {:feedback {:key :feedback :title "用户反馈" :n 2}
-   :broadcast {:key :broadcast :title "推送消息" :n 3}
+  {:feedback   {:key :feedback :title "用户反馈" :n 2}
+   :broadcast  {:key :broadcast :title "推送消息" :n 3}
    :usermanage {:key :usermanage :title "用户管理" :n 4}
-   :mblog {:key :mblog :title "社区活动" :n 6}})
+   :shop       {:key :shop :title "商城" :n 5}
+   :mblog      {:key :mblog :title "社区活动" :n 6}})
 
 (defn user-has-right? [right-key]
   (when-let [n  (get-in map-rightcode [right-key :n])]

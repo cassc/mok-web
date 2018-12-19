@@ -70,16 +70,23 @@
          ;;   [:li {:class (when (= (session/get :page) :videos) "bk-li-active")}
          ;;    [:a {:href "#/videos"} "视频课程"]])
          ]])
-     [:div
-      [:div.bkl-title.bkl-img2 "商城"]
-      [:ul.bk-ul
-       [:li {:class (when (= (session/get :page) :shop) "bk-li-active")}
-        [:a {:href "#/seller"} "卖家管理"]]
-       [:li {:class (when (= (session/get :page) :prod) "bk-li-active")}
-        [:a {:href "#/prod"} "商品管理"]]
-       [:li {:class (when (= (session/get :page) :order) "bk-li-active")}
-        [:a {:href "#/order"} "订单发货"]]]]]))
+     (when (user-has-right? :shop)
+       [:div
+        [:div.bkl-title.bkl-img2 "商城"]
+        [:ul.bk-ul
+         [:li {:class (when (= (session/get :page) :shop) "bk-li-active")}
+          [:a {:href "#/seller"} "卖家管理"]]
+         [:li {:class (when (= (session/get :page) :prod) "bk-li-active")}
+          [:a {:href "#/prod"} "商品管理"]]
+         [:li {:class (when (= (session/get :page) :order) "bk-li-active")}
+          [:a {:href "#/order"} "订单发货"]]]])]))
 
+(defn task-select-pane []
+  [:div.bkcr-content
+   [:h3 "您好，" (or
+                  (:email @me)
+                  (:username @me)) "！" ]
+   [:div "欢迎使用海尔健康平台内部管理系统，请选择左侧的菜单开始。"]])
 
 (defn- get-me []
   (let [ch (chan)]
@@ -132,7 +139,8 @@
    :banner-manage #'banner-manage
    :acts-manage #'acts-manage
    :report-manage #'report-manage
-   :videos #'videos-page})
+   :videos #'videos-page
+   :task-select-pane #'task-select-pane})
 
 (defn page []
   [(pages (session/get :page))])
@@ -142,7 +150,14 @@
 (secretary/set-config! :prefix "#")
 
 ;; TODO too many code repeats
-(secretary/defroute "/" [] (session/put! :page :um))
+(secretary/defroute "/" []
+  (cond
+    (user-has-right? :usermanage) (session/put! :page :um)
+    (user-has-right? :feedback) (session/put! :page :feedback-manage)
+    (user-has-right? :shop) (session/put! :page :shop)
+    (user-has-right? :broadcast) (session/put! :page :broadcast)
+    (user-has-right? :mblog) (session/put! :page :mblog-manage)
+    :else (session/put! :page :task-select-pane)))
 
 (secretary/defroute "/broadcast" []
   (session/put! :page :broadcast))
