@@ -34,6 +34,7 @@
 (def default-jifen-state {:phone "" :code "" :score ""})
 (defonce jifen-state (atom default-jifen-state))
 (defonce jifen-code-list (atom []))
+(defonce request-jifen-code-list (atom [{}]))
 (defonce active-jifen-panel (atom nil))
 
 (defn- show-tab [ky]
@@ -524,6 +525,24 @@
         [:div score]
         [:div (str (utils/ts->readable-time ts))]]))]])
 
+(defn- user-request-jifen-panel []
+  [:div {:class (if (= :user-request-jifen @active-jifen-panel) "show" "hide")}
+   [:div.umjf__code-list
+    [:div.umjf__code-row.umjf__code-row--header
+     [:div "兑换码"]
+     [:div "用户手机号"]
+     [:div "分值"]
+     [:div "操作"]]
+    (doall
+     (for [{:keys [id code score ts haier aid]} @request-jifen-code-list]
+       [:div.umjf__code-row {:key (str "rcdl." id)}
+        [:div code]
+        [:div haier]
+        [:div score]
+        [:div
+         [:a {:href "javascript:;"} "同意"]
+         [:a {:href "javascript:;"} "删除"]]]))]])
+
 (defn jifen-panel []
   [:div {:class (if (= :jifen-panel @active-tab) "show" "hide")}
    [:div.umjf
@@ -546,9 +565,16 @@
           :class (when (= :add-jifen @active-jifen-panel)
                    "umjf__top-nav-btn--active")
           :on-click #(reset! active-jifen-panel :add-jifen)}
-      "兑换积分"]]
+      "兑换积分"]
+     [:span "|"]
+     [:a {:href "javascript:;"
+          :class (when (= :user-request-jifen @active-jifen-panel)
+                   "umjf__top-nav-btn--active")
+          :on-click #(reset! active-jifen-panel :user-request-jifen)}
+      "积分兑换申请"]]
     [jifen-code-list-panel]
-    [add-jifen-panel]]])
+    [add-jifen-panel]
+    [user-request-jifen-panel]]])
 
 
 (defn- make-age-stats-string [age-dist]
