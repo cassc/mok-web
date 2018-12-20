@@ -80,6 +80,21 @@
      (when (s/blank? title) {:key :title :msg "商品标题不能为空"})
      (when (not (pos? sid)) {:key :sid :msg "请选择卖家"}))))
 
+(defn delete-product [{:keys [id]}]
+  (DELETE "/shop/product"
+       {:params {:pid id}
+        :format :json
+        :response-format :json
+        :keywords? true
+        :timeout 60000
+        :handler (make-resp-handler
+                  {:msg-success "删除成功！" :msg-fail "请求失败！"
+                   :callback-success #(do
+                                        (load-prods!)
+                                        (switch-to-panel :home)
+                                        (reset! product-state default-product))})
+        :error-handler default-error-handler}))
+
 (defn add-product [prod]
   (PUT "/shop/product"
        {:params prod
@@ -102,6 +117,8 @@
                                (js/alert msg)
                                (add-product @product-state))}
     (if edit? "保存" "添加")]
+   (when edit?
+     [:a.btn-light {:href "javascript:;" :on-click #(delete-product @product-state)} "删除"])
    [:a.btn-light {:href "javascript:;" :on-click #(do
                                                     (swap! app-state dissoc :panel)
                                                     (reset! product-state default-product))} "取消"]])
@@ -234,14 +251,17 @@
                                            (reset! tmp-tag ""))))}
             "添加"]]
           [:div.prod__label "介绍"]
-          [:textarea {:value (:description @product-state "") :on-change #(swap! product-state assoc :description (-> % .-target .-value))}]
-          [:div.prod__label "封面图片"]
+          [:textarea {:value (:description @product-state "") :on-change #(let [desc (-> % .-target .-value)]
+                                                                            (if (> (count desc) 30)
+                                                                              (js/alert "描述必须在30个字符以内！")
+                                                                              (swap! product-state assoc :description desc)))}]
+          [:div.prod__label "封面图(宽高比：)"]
           [cover-image-editor]
-          [:div.prod__label "轮播图"]
+          [:div.prod__label "轮播图(宽高比为2:1)"]
           [carousel-image-editor]
-          [:div.prod__label "列表小图"]
+          [:div.prod__label "列表小图(宽高比为1:1)"]
           [thumbnail-image-editor]
-          [:div.prod__label "内容图片"]
+          [:div.prod__label "内容图片(宽高比为4:3)"]
           [content-image-editor]
           [:div.prod__label "当前状态：" (if (= status "hide") "已下架" "销售中")]
           [:a.btn-light
