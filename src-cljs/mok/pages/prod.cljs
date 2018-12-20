@@ -28,9 +28,9 @@
 
 (defonce app-state (atom {}))
 
-(def default-product {:score 0 :price-yuan 0 :sid 1 :status "show" :loc -1})
+(def default-product {:score 0 :price-yuan 0 :sid -1 :status "show" :loc -1})
 
-(defonce product-state (atom {}))
+(defonce product-state (atom default-product))
 
 (defonce product-list-store (atom []))
 
@@ -106,6 +106,90 @@
                                                     (swap! app-state dissoc :panel)
                                                     (reset! product-state default-product))} "取消"]])
 
+(defn- cover-image-editor []
+  [:div
+   [:div.prod__cover-img {:title "封面图"}
+    (doall
+     (for [cover (:v-cover @product-state)]
+       [:img
+        {:key (str "cvr." cover)
+         :src (if (s/includes? cover "/")
+                cover
+                (str "/broadcast/images/" cover))
+         :on-click #(when (js/confirm "删除此图片？")
+                      (swap! product-state update :v-cover remove-from-vec cover))}]))]
+   [:input.prod__cover-btn
+    {:type :file
+     :on-change (fn [e]
+                  (let [file (first (array-seq (.. e -target -files)))]
+                    (maybe-upload-file
+                     file
+                     (fn [{:keys [data]}]
+                       (swap! product-state update :v-cover add-to-vec data)))))}]])
+
+(defn- content-image-editor []
+  [:div
+   [:div.prod__content-img {:title "详情图"}
+    (doall
+     (for [image (:v-image @product-state)]
+       [:img
+        {:key (str "cvr." image)
+         :src (if (s/includes? image "/")
+                image
+                (str "/broadcast/images/" image))
+         :on-click #(when (js/confirm "删除此图片？")
+                      (swap! product-state update :v-image remove-from-vec image))}]))]
+   [:input.prod__cover-btn
+    {:type :file
+     :on-change (fn [e]
+                  (let [file (first (array-seq (.. e -target -files)))]
+                    (maybe-upload-file
+                     file
+                     (fn [{:keys [data]}]
+                       (swap! product-state update :v-image add-to-vec data)))))}]])
+
+(defn- carousel-image-editor []
+  [:div
+   [:div.prod__cover-img {:title "轮播图"}
+    (doall
+     (for [image (:v-carousel @product-state)]
+       [:img
+        {:key (str "cvr." image)
+         :src (if (s/includes? image "/")
+                image
+                (str "/broadcast/images/" image))
+         :on-click #(when (js/confirm "删除此图片？")
+                      (swap! product-state update :v-carousel remove-from-vec image))}]))]
+   [:input.prod__cover-btn
+    {:type :file
+     :on-change (fn [e]
+                  (let [file (first (array-seq (.. e -target -files)))]
+                    (maybe-upload-file
+                     file
+                     (fn [{:keys [data]}]
+                       (swap! product-state update :v-carousel add-to-vec data)))))}]])
+
+(defn- thumbnail-image-editor []
+  [:div
+   [:div.prod__cover-img {:title "列表小图"}
+    (doall
+     (for [image (:v-thumbnail @product-state)]
+       [:img
+        {:key (str "cvr." image)
+         :src (if (s/includes? image "/")
+                image
+                (str "/broadcast/images/" image))
+         :on-click #(when (js/confirm "删除此图片？")
+                      (swap! product-state update :v-thumbnail remove-from-vec image))}]))]
+   [:input.prod__cover-btn
+    {:type :file
+     :on-change (fn [e]
+                  (let [file (first (array-seq (.. e -target -files)))]
+                    (maybe-upload-file
+                     file
+                     (fn [{:keys [data]}]
+                       (swap! product-state update :v-thumbnail add-to-vec data)))))}]])
+
 (defn product-panel []
   (let [tmp-tag (atom "")]
     (fn []
@@ -152,45 +236,13 @@
           [:div.prod__label "介绍"]
           [:textarea {:value (:description @product-state "") :on-change #(swap! product-state assoc :description (-> % .-target .-value))}]
           [:div.prod__label "封面图片"]
-          [:div
-           [:div.prod__cover-img
-            (doall
-             (for [cover (:v-cover @product-state)]
-               [:img
-                {:key (str "cvr." cover)
-                 :src (if (s/includes? cover "/")
-                        cover
-                        (str "/broadcast/images/" cover))
-                 :on-click #(when (js/confirm "删除此图片？")
-                              (swap! product-state update :v-cover remove-from-vec cover))}]))]
-           [:input.prod__cover-btn
-            {:type :file
-             :on-change (fn [e]
-                          (let [file (first (array-seq (.. e -target -files)))]
-                            (maybe-upload-file
-                             file
-                             (fn [{:keys [data]}]
-                               (swap! product-state update :v-cover add-to-vec data)))))}]]
+          [cover-image-editor]
+          [:div.prod__label "轮播图"]
+          [carousel-image-editor]
+          [:div.prod__label "列表小图"]
+          [thumbnail-image-editor]
           [:div.prod__label "内容图片"]
-          [:div
-           [:div.prod__content-img
-            (doall
-             (for [image (:v-image @product-state)]
-               [:img
-                {:key (str "cvr." image)
-                 :src (if (s/includes? image "/")
-                        image
-                        (str "/broadcast/images/" image))
-                 :on-click #(when (js/confirm "删除此图片？")
-                              (swap! product-state update :v-image remove-from-vec image))}]))]
-           [:input.prod__cover-btn
-            {:type :file
-             :on-change (fn [e]
-                          (let [file (first (array-seq (.. e -target -files)))]
-                            (maybe-upload-file
-                             file
-                             (fn [{:keys [data]}]
-                               (swap! product-state update :v-image add-to-vec data)))))}]]
+          [content-image-editor]
           [:div.prod__label "当前状态：" (if (= status "hide") "已下架" "销售中")]
           [:a.btn-light
            {:href "javascript:;" :on-click #(swap! product-state update :status (fn [st] (if (= status "hide") "show" "hide")))}
