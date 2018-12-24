@@ -259,4 +259,33 @@
     grid-row-gap: 1rem;
     grid-column-gap: .2rem;
   }
+
+  &__review-ops-btn-group{
+    display:flex;
+    & > a{
+      &:hover{
+        font-weight: bold;
+      }
+      &:not(:last-child){
+        margin-right: 1rem;
+      }
+    } 
+  }
+
+  &__score-input{
+    @include cInput;
+  }
+
+  &__coupon-row{
+    display: grid;
+    grid-template-columns: 2fr 3fr 2fr 3fr;
+    grid-column-gap: .2rem;
+    margin-bottom: .2rem;
+    align-items:center;
+
+    &--header{
+      font-weight: bold;
+    }
+  }
+
 }

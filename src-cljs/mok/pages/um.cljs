@@ -34,7 +34,7 @@
 (def default-jifen-state {:phone "" :code "" :score ""})
 (defonce jifen-state (atom default-jifen-state))
 (defonce jifen-code-list (atom []))
-(defonce request-jifen-code-list (atom [{}]))
+(defonce request-jifen-code-list (atom []))
 (defonce active-jifen-panel (atom nil))
 
 (defn- show-tab [ky]
@@ -81,6 +81,15 @@
           :error-handler (partial default-error-handler "/umstats.json")
           :response-format :json
           :keywords? true})))
+
+(defn load-req-jifen-list []
+  (GET "/jifen/coupon"
+       {:handler (make-resp-handler
+                  {:callback-success
+                   #(reset! request-jifen-code-list (:data %))})
+        :error-handler (partial default-error-handler "/jifen/coupon")
+        :response-format :json
+        :keywords? true}))
 
 (defn- load-more []
   (let [wh (.height (js/$ js/document))
@@ -466,20 +475,35 @@
    (when (or (s/blank? score) (<= (js/parseInt score) 0))
      "请输入有效的分值")))
 
-(defn- add-jifen [{:keys [code score phone user]}]
+(defn- add-jifen [{:keys [code score phone user byuser]}]
   (PUT "/jifen"
-       {:params {:aid (:id user) :score score :code code}
+       {:params {:aid (:id user) :score score :code code :byuser byuser}
         :handler (make-resp-handler
                   {:callback-success
                    #(do
                       (load-jifen-code-list!)
+                      (when byuser
+                        (load-req-jifen-list))
                       (reset! active-jifen-panel :code-list)
                       (reset! jifen-state default-jifen-state)
-                      (make-toast "修改成功！"))})
+                      (make-toast "操作成功！"))})
         :error-handler (partial default-error-handler "/jifen")
         :response-format :json
         :format :json
         :keywords? true}))
+
+(defn- reject-coupon [{:keys [aid coupon]}]
+  (POST "/jifen/coupon"
+        {:params {:aid aid :coupon coupon :status "reject" :reason "兑换码无效或已使用"}
+         :handler (make-resp-handler
+                   {:callback-success
+                    #(do
+                       (load-req-jifen-list)
+                       (make-toast "操作成功！"))})
+         :error-handler (partial default-error-handler "/jifen/coupon")
+         :response-format :json
+         :format :json
+         :keywords? true}))
 
 (defn- add-jifen-panel []
   [:div {:class (if (= :add-jifen @active-jifen-panel) "show" "hide")}
@@ -525,23 +549,38 @@
         [:div score]
         [:div (str (utils/ts->readable-time ts))]]))]])
 
+(defn- coupon-row [{:keys [id coupon reason status score ts aid user] :as row}]
+  (let [state (atom row)]
+    (fn [_]
+      [:div.umjf__coupon-row {:key (str "rcdl." id)}
+       [:div coupon]
+       [:div (str aid "/" (:haier user))]
+       [:div
+        [:input.umjf__score-input
+         {:type :number :value (:score @state) :on-change #(swap! state assoc :score (-> % .-target .-value))}]]
+       [:div.umjf__review-ops-btn-group
+        [:a {:href "javascript:;" :on-click #(if (pos? (:score @state))
+                                               (when (js/confirm (str "确认通过审核，添加" (:score @state) "分？"))
+                                                 (add-jifen {:code coupon :score (:score @state) :user user :byuser true}))
+                                               (make-toast :error "请输入有效分值"))}
+         "同意"]
+        [:a {:href "javascript:;"
+             :on-click #(when (js/confirm (str "确认拒绝？"))
+                          (reject-coupon {:coupon coupon :aid aid}))}
+         "拒绝"]]])))
+
 (defn- user-request-jifen-panel []
   [:div {:class (if (= :user-request-jifen @active-jifen-panel) "show" "hide")}
    [:div.umjf__code-list
-    [:div.umjf__code-row.umjf__code-row--header
+    [:div.umjf__coupon-row.umjf__coupon-row--header
      [:div "兑换码"]
-     [:div "用户手机号"]
+     [:div "用户ID/手机号"]
      [:div "分值"]
      [:div "操作"]]
     (doall
-     (for [{:keys [id code score ts haier aid]} @request-jifen-code-list]
-       [:div.umjf__code-row {:key (str "rcdl." id)}
-        [:div code]
-        [:div haier]
-        [:div score]
-        [:div
-         [:a {:href "javascript:;"} "同意"]
-         [:a {:href "javascript:;"} "删除"]]]))]])
+     (for [req @request-jifen-code-list]
+       ^{:key (str "cpr." (:coupon req))}
+       [coupon-row req]))]])
 
 (defn jifen-panel []
   [:div {:class (if (= :jifen-panel @active-tab) "show" "hide")}
@@ -570,8 +609,13 @@
      [:a {:href "javascript:;"
           :class (when (= :user-request-jifen @active-jifen-panel)
                    "umjf__top-nav-btn--active")
-          :on-click #(reset! active-jifen-panel :user-request-jifen)}
-      "积分兑换申请"]]
+          :on-click #(do
+                       (load-req-jifen-list)
+                       (reset! active-jifen-panel :user-request-jifen))}
+      "积分兑换申请"
+      (let [n (count @request-jifen-code-list)]
+        (when (pos? n)
+          (str " (" n ")")))]]
     [jifen-code-list-panel]
     [add-jifen-panel]
     [user-request-jifen-panel]]])
@@ -610,6 +654,7 @@
     (get-companylist))
   (when (not @userstats)
     (get-userstats))
+  (load-req-jifen-list)
   (fn []
     [:div.id.bkcr-content
      ;;[userstats-widget]
@@ -642,7 +687,10 @@
            [:p "无用户"])]
         [:div.um__head-opts--left
          [:a.btn-light {:href "javascript:;" :on-click #(show-tab :user-add)} "添加用户"]
-         [:a.btn-light {:href "javascript:;" :on-click #(show-tab :jifen-panel)} "积分兑换"]]
+         [:a.btn-light {:href "javascript:;" :on-click #(show-tab :jifen-panel)} "积分兑换"
+          (let [n (count @request-jifen-code-list)]
+            (when (pos? n)
+              (str " (" n ")")))]]
         [:div.um__head-opts--left
          [:a.btn-light {:href "javascript:;" :on-click #(show-tab :m-broadcast)} "广播消息"]]
         ])

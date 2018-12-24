@@ -255,13 +255,13 @@
                                                                             (if (> (count desc) 30)
                                                                               (js/alert "描述必须在30个字符以内！")
                                                                               (swap! product-state assoc :description desc)))}]
-          [:div.prod__label "封面图(宽高比：)"]
+          [:div.prod__label "封面图(宽高比为4:3)"]
           [cover-image-editor]
           [:div.prod__label "轮播图(宽高比为2:1)"]
           [carousel-image-editor]
           [:div.prod__label "列表小图(宽高比为1:1)"]
           [thumbnail-image-editor]
-          [:div.prod__label "内容图片(宽高比为4:3)"]
+          [:div.prod__label "详情图"]
           [content-image-editor]
           [:div.prod__label "当前状态：" (if (= status "hide") "已下架" "销售中")]
           [:a.btn-light
