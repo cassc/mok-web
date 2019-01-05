@@ -644,24 +644,26 @@
           ""
           (take 20 (reverse (sort-by :percent age-dist)))))
 
-(defn userstats-widget
-  []
-  [:div.user_statistics
-   [:p.us_title "用户概况"]
-   (doall
-    (for [stat @userstats]
-      ^{:key (str (Math/random))}
-      [:div.user_statistics_wrap
-       [:div.us_companyName
-        [:p.us_companyName_title (str (-> stat :company :name) "(" (-> stat :company :id) ")") ]
-        (if (pos? (-> stat :users :all))
-          [:ul.us_companyName_ul
-           [:li [:span [:a {:title (make-age-stats-string (-> stat :users :age-stats)) :href "javascript:;"} "年龄占比前20名" [:i.fa.fa-hand-paper-o]]]]
-           [:li (str "总用户数：" (-> stat :users :all))]
-           [:li (str "设备用户数：" (-> stat :users :wm))]
-           [:li (str "周活跃用户数：" (-> stat :week-cnt))]
-           [:li (str "月活跃用户数：" (-> stat :month-cnt))]]
-          [:p "无用户"])]]))])
+(defn- make-scale-stats-string [{:keys [health unknown kitchen]}]
+  (str "未上报：" unknown "\n"
+       (reduce-kv (fn [r k v]
+                    (str r (name k) "：" v "\n"))
+                  ""
+                  health)
+       (reduce-kv (fn [r k v]
+                    (str r (name k) "：" v "\n"))
+                  ""
+                  kitchen)))
+
+(defn- userstat-box [stat]
+  [:div.um__head-stat
+   [:div [:span [:a {:title (make-age-stats-string (-> stat :users :age-stats)) :href "javascript:;"} "年龄占比前20名" [:i.fa.fa-hand-paper-o]]]]
+   [:div (str "总用户数：" (-> stat :users :all))]
+   [:div
+    [:span [:a {:title (make-scale-stats-string (-> stat :scale)) :href "javascript:;"} (str "设备用户数：" (-> stat :users :wm))
+            [:i.fa.fa-hand-paper-o]]]]
+   [:div (str "周活跃用户数：" (-> stat :week-cnt))]
+   [:div (str "月活跃用户数：" (-> stat :month-cnt))]])
 
 (defn um []
   (set-title! "用户管理")
@@ -674,7 +676,6 @@
   (load-req-jifen-list)
   (fn []
     [:div.id.bkcr-content
-     ;;[userstats-widget]
      [:p.bkcrc-title
       [:span "管理"]
       "  >  "
@@ -695,12 +696,7 @@
                                  :else nil))}]
         [:div.um__head-opts--right.um__head-opts--stat
          (if (pos? (-> stat :users :all))
-           [:div.um__head-stat
-            [:div [:span [:a {:title (make-age-stats-string (-> stat :users :age-stats)) :href "javascript:;"} "年龄占比前20名" [:i.fa.fa-hand-paper-o]]]]
-            [:div (str "总用户数：" (-> stat :users :all))]
-            [:div (str "设备用户数：" (-> stat :users :wm))]
-            [:div (str "周活跃用户数：" (-> stat :week-cnt))]
-            [:div (str "月活跃用户数：" (-> stat :month-cnt))]]
+           [userstat-box stat]
            [:p "无用户"])]
         [:div.um__head-opts--left
          [:a.btn-light {:href "javascript:;" :on-click #(show-tab :user-add)} "添加用户"]
@@ -709,8 +705,7 @@
             (when (pos? n)
               (str " (" (get-n-coupon-auto-confirming) "/" n ")")))]]
         [:div.um__head-opts--left
-         [:a.btn-light {:href "javascript:;" :on-click #(show-tab :m-broadcast)} "广播消息"]]
-        ])
+         [:a.btn-light {:href "javascript:;" :on-click #(show-tab :m-broadcast)} "广播消息"]]])
      [userlist-table]
      [user-add-field]
      [m-broadcast-panel]
