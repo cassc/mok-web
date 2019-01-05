@@ -40,6 +40,22 @@
 (defn- show-tab [ky]
   (reset! active-tab ky))
 
+(defn- get-n-coupon-auto-confirming
+  ([]
+   (get-n-coupon-auto-confirming @request-jifen-code-list))
+  ([n]
+   (count
+    (filter (fn [ts]
+              (> (- (.getTime (now)) ts)
+                 (* 8 3600 24 1000)))
+            n))))
+
+(add-watch request-jifen-code-list :notify-when-coupon-confirming
+           (fn [k r o n]
+             (let [cnt (get-n-coupon-auto-confirming n)]
+               (when (pos? cnt)
+                 (make-toast :warn (str "有" cnt "个兑换码申请将在两天内自动确认！"))))))
+
 (defonce default-search-params
   {:page 1
    :cnt 20
@@ -51,6 +67,9 @@
   (atom default-search-params))
 
 (defonce search-state (atom {:last nil :searching nil}))
+
+(defn- ts-to-confirm-date [ts]
+  (subs (utils/ts->readable-time (+ ts (* 10 3600 24 1000))) 0 10))
 
 ;; TODO better to switch to websocket
 (defn- get-userlist [& [replace?]]
@@ -550,24 +569,21 @@
         [:div (str (utils/ts->readable-time ts))]]))]])
 
 (defn- coupon-row [{:keys [id coupon reason status score ts aid user] :as row}]
-  (let [state (atom row)]
-    (fn [_]
-      [:div.umjf__coupon-row {:key (str "rcdl." id)}
-       [:div coupon]
-       [:div (str aid "/" (:haier user))]
-       [:div
-        [:input.umjf__score-input
-         {:type :number :value (:score @state) :on-change #(swap! state assoc :score (-> % .-target .-value))}]]
-       [:div.umjf__review-ops-btn-group
-        [:a {:href "javascript:;" :on-click #(if (pos? (:score @state))
-                                               (when (js/confirm (str "确认通过审核，添加" (:score @state) "分？"))
-                                                 (add-jifen {:code coupon :score (:score @state) :user user :byuser true}))
-                                               (make-toast :error "请输入有效分值"))}
-         "同意"]
-        [:a {:href "javascript:;"
-             :on-click #(when (js/confirm (str "确认拒绝？"))
-                          (reject-coupon {:coupon coupon :aid aid}))}
-         "拒绝"]]])))
+  (fn [_]
+    [:div.umjf__coupon-row {:key (str "rcdl." id)}
+     [:div coupon]
+     [:div (str aid "/" (:haier user))]
+     [:div score]
+     [:div (ts-to-confirm-date ts)]
+     [:div.umjf__review-ops-btn-group
+      ;; [:a {:href "javascript:;"
+      ;;      :on-click #(when (js/confirm (str "确认通过审核，添加" score "分？"))
+      ;;                   (add-jifen {:code coupon :score score :user user :byuser true}))}
+      ;;  "同意"]
+      [:a {:href "javascript:;"
+           :on-click #(when (js/confirm (str "确认拒绝？"))
+                        (reject-coupon {:coupon coupon :aid aid}))}
+       "拒绝"]]]))
 
 (defn- user-request-jifen-panel []
   [:div {:class (if (= :user-request-jifen @active-jifen-panel) "show" "hide")}
@@ -576,6 +592,7 @@
      [:div "兑换码"]
      [:div "用户ID/手机号"]
      [:div "分值"]
+     [:div "自动确认时间"]
      [:div "操作"]]
     (doall
      (for [req @request-jifen-code-list]
@@ -615,7 +632,7 @@
       "积分兑换申请"
       (let [n (count @request-jifen-code-list)]
         (when (pos? n)
-          (str " (" n ")")))]]
+          (str " (" (get-n-coupon-auto-confirming) "/" n ")")))]]
     [jifen-code-list-panel]
     [add-jifen-panel]
     [user-request-jifen-panel]]])
@@ -690,7 +707,7 @@
          [:a.btn-light {:href "javascript:;" :on-click #(show-tab :jifen-panel)} "积分兑换"
           (let [n (count @request-jifen-code-list)]
             (when (pos? n)
-              (str " (" n ")")))]]
+              (str " (" (get-n-coupon-auto-confirming) "/" n ")")))]]
         [:div.um__head-opts--left
          [:a.btn-light {:href "javascript:;" :on-click #(show-tab :m-broadcast)} "广播消息"]]
         ])

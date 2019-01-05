@@ -149,7 +149,7 @@
 ;; Routes
 (secretary/set-config! :prefix "#")
 
-;; TODO too many code repeats
+
 (secretary/defroute "/" []
   (cond
     (user-has-right? :usermanage) (session/put! :page :um)
