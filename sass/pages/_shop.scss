@@ -204,11 +204,39 @@
 
   &__item{
     display: grid;
-    grid-template-columns: 1fr 2fr 2fr 2fr 6fr;
-    grid-gap: 4px;
+    grid-template-columns:  2fr 1fr 2fr 2fr 3fr;
+    grid-gap: .5rem;
     &--head{
       font-weight:bold;
       border-bottom: 1px solid $color-light-gray;
+    }
+  }
+
+  &__paginator{
+    display: flex;
+    justify-content:space-between;
+    margin-top: 1rem;
+    & > input {
+      @include cInput;
+      width: 4rem;
+      text-align:center;
+    }
+
+    &--disabled{
+      color: $color-secondary-light;
+      cursor: not-allowed;
+    }
+  }
+
+  &__query{
+    display:flex;
+    margin-bottom: 2rem;
+    align-items:center;
+    
+    & select{
+      @include cInput;
+      min-width: 8rem;
+      margin-left: 1rem;
     }
   }
 }

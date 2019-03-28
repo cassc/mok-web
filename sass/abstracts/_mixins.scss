@@ -31,9 +31,10 @@
 @mixin cInput{
   font-family: inherit;
   color: inherit;
-  padding: .5rem .35rem;
   border-radius: 4px;
+  height: 1.5rem;
   border: 1px solid $color-light-gray;
+  background-color: $color-white;
 }
 
 @mixin linkButton{

@@ -26,7 +26,7 @@
 
 (defonce loading? (atom nil))
 
-(defonce app-state (atom {:query-status "paid"}))
+(defonce app-state (atom {:query-status "paid" :query-page 1}))
 
 (defonce order-state (atom {}))
 (defonce order-list-store (atom []))
@@ -37,7 +37,8 @@
 (defn load-orders! []
   (GET "/shop/order"
        {:response-format :json
-        :params {:status (:query-status @app-state)}
+        :params {:status (:query-status @app-state)
+                 :page (:query-page @app-state)}
         :keywords? true
         :timeout 60000
         :handler (make-resp-handler
@@ -176,7 +177,7 @@
     [:div "订单状态"]
     [:select {:on-change #(let [idx (.. % -target -selectedIndex)
                                 status (-> (aget (.-target %) idx) .-value)]
-                            (swap! app-state assoc :query-status status)
+                            (swap! app-state assoc :query-status status :query-page 1)
                             (load-orders!))
               :value (:query-status @app-state "all")}
      [:option {:value "all"} "所有"]
@@ -185,23 +186,41 @@
         [:option {:value st :key (str "st." st)} txt]))]]
    [:div.order__list
     [:div.order__item.order__item--head
-     [:div "ID"]
+     ;; [:div "ID"]
+     [:div "订单号"]
      [:div "姓名"]
      [:div "电话号码"]
      [:div "状态"]
      [:div "商品"]]
     (doall
-     (for [{:keys [id fullname phone products status] :as order} @order-list-store]
+     (for [{:keys [id ouid fullname phone products status] :as order} @order-list-store]
        [:div.order__item.clickable
         {:key (str "od." id)
          :on-click #(do
                       (reset! order-state order)
                       (swap! app-state assoc :panel :edit))}
-        [:div id]
+        ;;[:div id]
+        [:div ouid]
         [:div fullname]
         [:div phone]
         [:div (m-status status)]
-        [:div (s/join ", " (map (fn [{:keys [title quantity]}] (str title " x " quantity)) products))]]))]])
+        [:div (s/join ", " (map (fn [{:keys [title quantity]}] (str title " x " quantity)) products))]]))]
+   [:div.order__paginator
+    (if (> (:query-page @app-state) 1)
+      [:a.btn.btn-light {:href "javascript:;" :on-click #(do
+                                                           (swap! app-state update :query-page dec)
+                                                           (load-orders!))}
+       "上一页"]
+      [:div.btn.btn-light.order__paginator--disabled "上一页"])
+    [:input {:type :number
+             :on-change #(swap! app-state assoc :query-page (-> % .-target .-value))
+             :value (:query-page @app-state 1)}]
+    (if (= (count @order-list-store) 20)
+      [:a.btn.btn-light {:href "javascript:;" :on-click #(do
+                                                           (swap! app-state update :query-page inc)
+                                                           (load-orders!))}
+       "下一页"]
+      [:div.btn.btn-light..order__paginator--disabled "下一页"])]]) 
 
 (defn order-manage []
   (set-title! "商品管理")
