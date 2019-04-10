@@ -26,10 +26,13 @@
 
 (defonce loading? (atom nil))
 
-(defonce app-state (atom {:query-status "paid" :query-page 1}))
+(defonce app-state (atom {:query-status "paid" :query-page 1 :return-status "pending" :return-page 1}))
 
 (defonce order-state (atom {}))
 (defonce order-list-store (atom []))
+(defonce order-return-list-store (atom []))
+(defonce return-state (atom {}))
+
 
 (defn switch-to-panel [panel]
   (swap! app-state assoc :panel panel))
@@ -44,6 +47,18 @@
         :handler (make-resp-handler
                   {:msg-fail "请求失败！"
                    :callback-success #(reset! order-list-store (:data %))})
+        :error-handler default-error-handler}))
+
+(defn load-order-returns! []
+  (GET "/shop/order-return"
+       {:response-format :json
+        :params {:status (:return-status @app-state)
+                 :page (:return-page @app-state)}
+        :keywords? true
+        :timeout 60000
+        :handler (make-resp-handler
+                  {:msg-fail "请求失败！"
+                   :callback-success #(reset! order-return-list-store (:data %))})
         :error-handler default-error-handler}))
 
 (defn update-order-cache [{:keys [id] :as order}]
@@ -113,6 +128,11 @@
    "complete" "已完成"
    "cancel" "已取消"
    "hide" "已删除"})
+
+(def return-status
+  {"pending" "未处理"
+   "success" "成功"
+   "reject" "已拒绝"})
 
 (defn close-btn []
   [:div.order-edit__btn-group
@@ -212,9 +232,7 @@
                                                            (load-orders!))}
        "上一页"]
       [:div.btn.btn-light.order__paginator--disabled "上一页"])
-    [:input {:type :number
-             :on-change #(swap! app-state assoc :query-page (-> % .-target .-value))
-             :value (:query-page @app-state 1)}]
+    [:span (:query-page @app-state 1)]
     (if (= (count @order-list-store) 20)
       [:a.btn.btn-light {:href "javascript:;" :on-click #(do
                                                            (swap! app-state update :query-page inc)
@@ -235,4 +253,103 @@
      (case (:panel @app-state)
        :edit [order-panel]
        [order-list-panel])]))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; UI ORDER PRODUCT RETURN
+(defn return-close-btn []
+  [:div.order-edit__btn-group
+   [:a.btn-light {:href "javascript:;"
+                  :on-click #(do
+                               (swap! app-state dissoc :panel)
+                               (reset! return-state {}))}
+    "返回"]])
+
+(defn return-panel []
+  [:div.order-edit
+   [return-close-btn]
+   (let [{:keys [product ouid quantity ship_id ship_provider status]}
+         @return-state]
+     [:div.order-edit__fields
+      [:div.order-edit__label "订单号"]
+      [:div.order-edit__field ouid]
+      [:div.order-edit__label "商品"]
+      [:div.order-edit__field (get-in @return-state [:product :title])]
+      [:div.order-edit__label "数量"]
+      [:div.order-edit__field quantity]
+      [:div.order-edit__label "快递"]
+      [:div.order-edit__field (str ship_provider " / " ship_id)]
+      [:div.order-edit__label "退货状态"]
+      [:div.order-edit__field (return-status status)]])
+   (when (= "pending" (:status @return-state))
+     [:div.order-edit__btn-group
+      [:a.btn-light {:href "javascript:;"
+                     :on-click #(when (js/confirm "确认同意退换请求并退款退积分？")
+                                  )}
+       "同意"]
+      [:a.btn-light {:href "javascript:;"
+                     :on-click #(when (js/confirm "确认拒绝此退换请求？")
+                                  )}
+       "拒绝"]])])
+
+(defn return-list-panel []
+  [:div.order
+   [:div.order__query
+    [:div "退换货状态"]
+    [:select {:on-change #(let [idx (.. % -target -selectedIndex)
+                                status (-> (aget (.-target %) idx) .-value)]
+                            (swap! app-state assoc :return-status status :return-page 1)
+                            (load-order-returns!))
+              :value (:return-status @app-state "all")}
+     [:option {:value "all"} "所有"]
+     (doall
+      (for [[st txt] return-status]
+        [:option {:value st :key (str "rtop." st)} txt]))]]
+   [:div.order__list
+    [:div.order__item.order__item--head
+     [:div "订单号"]
+     [:div "快递"]
+     [:div "快递单号"]
+     [:div "状态"]
+     [:div "商品"]]
+    (doall
+     (for [{:keys [id ouid ship_provider ship_id product quantity status] :as order} @order-return-list-store]
+       [:div.order__item.clickable
+        {:key (str "od." id)
+         :on-click #(do
+                      (reset! return-state order)
+                      (swap! app-state assoc :panel :return-edit))}
+        [:div ouid]
+        [:div ship_provider]
+        [:div ship_id]
+        [:div (return-status status)]
+        [:div (str (:title product) "x" quantity)]]))]
+   [:div.order__paginator
+    (if (> (:query-page @app-state) 1)
+      [:a.btn.btn-light {:href "javascript:;" :on-click #(do
+                                                           (swap! app-state update :return-page dec)
+                                                           (load-orders!))}
+       "上一页"]
+      [:div.btn.btn-light.order__paginator--disabled "上一页"])
+    [:span (:return-page @app-state)]
+    (if (= (count @order-list-store) 20)
+      [:a.btn.btn-light {:href "javascript:;" :on-click #(do
+                                                           (swap! app-state update :return-page inc)
+                                                           (load-orders!))}
+       "下一页"]
+      [:div.btn.btn-light..order__paginator--disabled "下一页"])]])
+
+(defn order-return-manage []
+  (set-title! "退换货")
+  (load-sellers!)
+  (load-order-returns!)
+  (fn []
+    [:div.id.bkcr-content
+     [:p.bkcrc-title
+      [:span "商城"]
+      "  >  "
+      [:span.bkcrc-seceondT "订单发货"]]
+     (case (:panel @app-state)
+       :return-edit [return-panel]
+       [return-list-panel])]))
  

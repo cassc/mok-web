@@ -10,7 +10,7 @@
    [mok.pages.video :refer [videos-page]]
    [mok.pages.seller :refer [seller-manage]]
    [mok.pages.prod :refer [prod-manage]]
-   [mok.pages.order :refer [order-manage]]
+   [mok.pages.order :refer [order-manage order-return-manage]]
    [mok.pages.admin :refer [admin-page]]
    [mok.pages.banner :refer [banner-manage]]
    [mok.pages.feedback-manage :refer [feedback-manage]]
@@ -79,7 +79,9 @@
          [:li {:class (when (= (session/get :page) :prod) "bk-li-active")}
           [:a {:href "#/prod"} "商品管理"]]
          [:li {:class (when (= (session/get :page) :order) "bk-li-active")}
-          [:a {:href "#/order"} "订单发货"]]]])]))
+          [:a {:href "#/order"} "订单发货"]]
+         [:li {:class (when (= (session/get :page) :order-return) "bk-li-active")}
+          [:a {:href "#/order-return"} "退换货"]]]])]))
 
 (defn task-select-pane []
   [:div.bkcr-content
@@ -133,6 +135,7 @@
    :seller #'seller-manage
    :prod #'prod-manage
    :order #'order-manage
+   :order-return #'order-return-manage
    :admin #'admin-page
    :feedback-manage #'feedback-manage
    :mblog-manage #'mblog-manage
@@ -181,8 +184,8 @@
   (session/put! :page :prod))
 (secretary/defroute "/seller" []
   (session/put! :page :seller))
-(secretary/defroute "/order" []
-  (session/put! :page :order))
+(secretary/defroute "/order" [] (session/put! :page :order))
+(secretary/defroute "/order-return" [] (session/put! :page :order-return))
 
 (secretary/defroute "/um" []
   (session/put! :page :um))
