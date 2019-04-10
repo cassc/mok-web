@@ -268,15 +268,21 @@
 (defn return-panel []
   [:div.order-edit
    [return-close-btn]
-   (let [{:keys [product ouid quantity ship_id ship_provider status]}
+   (let [{:keys [product ouid quantity tpe ship_id ship_provider status score price]}
          @return-state]
      [:div.order-edit__fields
       [:div.order-edit__label "订单号"]
       [:div.order-edit__field ouid]
-      [:div.order-edit__label "商品"]
+      [:div.order-edit__label "请求类型"]
+      [:div.order-edit__field (case tpe "return" "退货" "exchange" "换货")]
+      [:div.order-edit__label "退换商品"]
       [:div.order-edit__field (get-in @return-state [:product :title])]
-      [:div.order-edit__label "数量"]
+      [:div.order-edit__label "退换数量"]
       [:div.order-edit__field quantity]
+      [:div.order-edit__label "预计退还积分"]
+      [:div.order-edit__field score] ;; TODO
+      [:div.order-edit__label "预计退还现金"]
+      [:div.order-edit__label price]
       [:div.order-edit__label "快递"]
       [:div.order-edit__field (str ship_provider " / " ship_id)]
       [:div.order-edit__label "退货状态"]
