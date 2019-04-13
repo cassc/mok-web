@@ -331,3 +331,9 @@
 
 (defn oss-res [ky]
   (str jianqing-oss-base ky))
+
+(defn to-fixed
+  ([f]
+   (to-fixed f 2))
+  ([f precision]
+   (.toFixed (js/parseFloat f) precision)))

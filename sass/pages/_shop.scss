@@ -210,6 +210,9 @@
       font-weight:bold;
       border-bottom: 1px solid $color-light-gray;
     }
+    &--return{
+      grid-template-columns:  3fr 1fr 3fr 1fr 2fr 3fr;
+    }
   }
 
   &__paginator{
