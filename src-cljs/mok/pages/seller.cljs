@@ -108,6 +108,10 @@
         [:div.seller__label "密码"])
       (when (and (admin?) (not edit?))
         [:input {:type :text :value (:password @seller-state "") :on-change #(swap! seller-state assoc :password (-> % .-target .-value))}])
+      [:div.seller__label "Address"]
+      [:input {:value (:address @seller-state "") :on-change #(swap! seller-state assoc :address (-> % .-target .-value))}] 
+      [:div.seller__label "Zipcode"]
+      [:input {:value (:zipcode @seller-state "") :on-change #(swap! seller-state assoc :zipcode (-> % .-target .-value))}]
       [:div.seller__label "店铺介绍"]
       [:textarea {:value (:description @seller-state "") :on-change #(swap! seller-state assoc :description (-> % .-target .-value))}]
       [:div.seller__btn-group
@@ -147,7 +151,7 @@
       [:span "商城"]
       "  >  "
       [:span.bkcrc-seceondT "卖家管理"]]
-     (when-not (:panel @app-state)
+     (when (= :home (:panel @app-state :home))
        [:button.buttons.mt10 {:on-click #(swap! app-state assoc :panel :add)} "添加"])
      (case (:panel @app-state)
        :add [seller-panel]
