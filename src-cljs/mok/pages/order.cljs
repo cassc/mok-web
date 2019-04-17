@@ -370,17 +370,18 @@
           [:div (return-status status)]
           [:div (str (:title product) "x" quantity)]]))]
      [:div.order__paginator
-      (if (> (:query-page @app-state) 1)
+      (if (> (:return-page @app-state) 1)
         [:a.btn.btn-light {:href "javascript:;" :on-click #(do
                                                              (swap! app-state update :return-page dec)
-                                                             (load-orders!))}
+                                                             (load-order-returns!))}
          "上一页"]
         [:div.btn.btn-light.order__paginator--disabled "上一页"])
       [:span (:return-page @app-state)]
-      (if (= (count @order-list-store) 20)
-        [:a.btn.btn-light {:href "javascript:;" :on-click #(do
-                                                             (swap! app-state update :return-page inc)
-                                                             (load-orders!))}
+      (if (= (count @order-return-list-store) 20)
+        [:a.btn.btn-light {:href "javascript:;"
+                           :on-click #(do
+                                        (swap! app-state update :return-page inc)
+                                        (load-order-returns!))}
          "下一页"]
         [:div.btn.btn-light..order__paginator--disabled "下一页"])]]))
 
