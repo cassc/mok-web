@@ -760,7 +760,9 @@ table tr th{
   position:absolute;
   left:50%;
   margin-left:-300px;
-  top:25%;
+  top:20%;
+  max-height: 55vh;
+  overflow-y: scroll;
 }
 .alertViewBoxContent .ct{
   padding: 10px;
