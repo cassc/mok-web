@@ -295,7 +295,7 @@
     "返回"]])
 
 (defn return-tpe->text [tpe]
-  (case tpe "return" "退货" "exchange" "换货"))
+  (case tpe "return" "退货" "exchange" "换货" "refund" "退款"))
 
 
 (defn return-panel []
